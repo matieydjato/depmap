@@ -47,16 +47,6 @@ depmap check
 depmap check ./src --exclude "**/*.test.ts"
 ```
 
-## Features (MVP)
-
-- **File scanning** — walks your project, respects `.gitignore`
-- **Import parsing** — ES6 imports, CommonJS require, dynamic imports, re-exports
-- **Interactive graph** — zoom, pan, drag nodes, powered by Cytoscape.js
-- **Circular dependency detection** — highlighted in red
-- **Click to inspect** — see imports and importedBy for any file
-- **File search** — filter graph by filename or path
-- **CI-friendly** — `depmap check` exits with code 1 on circular deps
-
 ## Supported File Types
 
 `.js` · `.jsx` · `.ts` · `.tsx` · `.mjs` · `.cjs`
