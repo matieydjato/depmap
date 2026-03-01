@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DepMap — Dependency Visualizer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* Header */
+    #header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      height: 56px;
+      z-index: 10;
+    }
+
+    #header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #f0f6fc;
+    }
+
+    #header h1 span { color: #58a6ff; }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      color: #8b949e;
+    }
+
+    .stats .stat-value { color: #f0f6fc; font-weight: 600; }
+    .stats .circular { color: #f85149; }
+
+    /* Toolbar buttons */
+    .toolbar {
+      display: flex;
+      gap: 8px;
+    }
+
+    .toolbar button {
+      padding: 6px 12px;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .toolbar button:hover {
+      background: #30363d;
+      border-color: #8b949e;
+    }
+
+    /* Search */
+    #search-container {
+      position: absolute;
+      top: 68px;
+      left: 16px;
+      z-index: 10;
+    }
+
+    #search {
+      width: 280px;
+      padding: 8px 12px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #search:focus { border-color: #58a6ff; }
+    #search::placeholder { color: #484f58; }
+
+    /* Graph container */
+    #cy {
+      width: 100%;
+      height: calc(100vh - 56px);
+    }
+
+    /* Inspector panel */
+    #inspector {
+      position: absolute;
+      top: 68px;
+      right: 16px;
+      width: 360px;
+      max-height: calc(100vh - 84px);
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 16px;
+      z-index: 10;
+      display: none;
+      overflow-y: auto;
+      font-size: 13px;
+    }
+
+    #inspector.visible { display: block; }
+
+    #inspector h2 {
+      font-size: 15px;
+      color: #f0f6fc;
+      margin-bottom: 4px;
+      word-break: break-all;
+      padding-right: 28px;
+    }
+
+    #inspector .file-path {
+      color: #8b949e;
+      font-size: 12px;
+      margin-bottom: 12px;
+      word-break: break-all;
+    }
+
+    #inspector .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #8b949e;
+      margin-top: 12px;
+      margin-bottom: 6px;
+    }
+
+    #inspector .dep-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    #inspector .dep-list li {
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      color: #c9d1d9;
+      transition: background 0.15s;
+    }
+
+    #inspector .dep-list li:hover { background: #21262d; }
+    #inspector .dep-list li.circular { color: #f85149; }
+
+    #inspector .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    #inspector .badge-circular {
+      background: rgba(248, 81, 73, 0.15);
+      color: #f85149;
+    }
+
+    #inspector .badge-ok {
+      background: rgba(63, 185, 80, 0.15);
+      color: #3fb950;
+    }
+
+    #close-inspector {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #8b949e;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    #close-inspector:hover { color: #f0f6fc; }
+
+    /* Simulate Delete Button */
+    .sim-delete-btn {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(248, 81, 73, 0.1);
+      border: 1px solid #f85149;
+      border-radius: 6px;
+      color: #f85149;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .sim-delete-btn:hover {
+      background: rgba(248, 81, 73, 0.25);
+    }
+
+    /* Delete Simulation Results */
+    #delete-sim-results {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(248, 81, 73, 0.06);
+      border: 1px solid #30363d;
+      border-radius: 6px;
+    }
+
+    #delete-sim-results.visible { display: block; }
+
+    #delete-sim-results h3 {
+      font-size: 13px;
+      color: #f85149;
+      margin-bottom: 8px;
+    }
+
+    .sim-stat {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 12px;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .sim-stat:last-child { border-bottom: none; }
+    .sim-stat-label { color: #8b949e; }
+    .sim-stat-value { color: #f0f6fc; font-weight: 600; }
+    .sim-stat-value.danger { color: #f85149; }
+
+    .sim-file-list {
+      list-style: none;
+      padding: 0;
+      margin-top: 8px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .sim-file-list li {
+      padding: 3px 6px;
+      font-size: 11px;
+      color: #c9d1d9;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .sim-file-list li:hover { background: #21262d; }
+    .sim-file-list li.direct { color: #f85149; }
+    .sim-file-list li.transitive { color: #d29922; }
+
+    /* Legend */
+    #legend {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 10px 14px;
+      z-index: 10;
+      font-size: 12px;
+      display: flex;
+      gap: 16px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.normal { background: #58a6ff; }
+    .legend-dot.circular { background: #f85149; }
+    .legend-dot.selected { background: #d2a8ff; }
+    .legend-dot.affected { background: #d29922; }
+
+    /* Toast notifications */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1f6feb;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    #toast.visible { display: block; }
+    #toast.success { background: #238636; }
+    #toast.error { background: #da3633; }
+
+    /* Package filter dropdown */
+    #pkg-filter {
+      padding: 6px 10px;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-size: 12px;
+      cursor: pointer;
+      outline: none;
+      display: none;
+    }
+
+    #pkg-filter:hover { border-color: #8b949e; }
+
+    /* Size mode toggle */
+    .toolbar button.active {
+      background: #1f6feb;
+      border-color: #1f6feb;
+      color: #fff;
+    }
+
+    /* Inspector meta info */
+    .inspector-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .inspector-meta .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #8b949e;
+    }
+
+    .inspector-meta .meta-value {
+      color: #f0f6fc;
+      font-weight: 600;
+    }
+
+    .inspector-meta .pkg-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(88, 166, 255, 0.15);
+      color: #58a6ff;
+    }
+
+    /* Cross-package edge legend */
+    .legend-line {
+      width: 20px;
+      height: 2px;
+      border-top: 2px dashed #f0883e;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <h1>&#x1F5FA;&#xFE0F; <span>DepMap</span></h1>
+    <div class="header-right">
+      <div class="stats" id="stats"></div>
+      <div class="toolbar">
+        <select id="pkg-filter" onchange="filterByPackage(this.value)" title="Filter by package">
+          <option value="">All packages</option>
+        </select>
+        <button id="size-mode-btn" onclick="toggleSizeMode()" title="Toggle node sizing: connections vs file size">Size: Connections</button>
+        <button onclick="exportJSON()" title="Export graph data as JSON">Export JSON</button>
+        <button onclick="exportPNG()" title="Export graph as PNG image">Export PNG</button>
+        <button onclick="resetView()" title="Reset zoom and position">Reset View</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="search-container">
+    <input type="text" id="search" placeholder="Search files..." />
+  </div>
+
+  <div id="cy"></div>
+
+  <div id="inspector">
+    <button id="close-inspector">&times;</button>
+    <h2 id="inspector-name"></h2>
+    <div class="file-path" id="inspector-path"></div>
+    <div class="inspector-meta" id="inspector-meta"></div>
+    <div id="inspector-status"></div>
+
+    <button class="sim-delete-btn" id="sim-delete-btn" onclick="simulateDelete()">
+      Simulate Deletion
+    </button>
+
+    <div id="delete-sim-results">
+      <h3>Deletion Impact</h3>
+      <div id="sim-stats"></div>
+      <div id="sim-affected-title" class="section-title" style="margin-top:10px">Affected Files</div>
+      <ul class="sim-file-list" id="sim-affected-list"></ul>
+    </div>
+
+    <div class="section-title">Imports (<span id="imports-count">0</span>)</div>
+    <ul class="dep-list" id="imports-list"></ul>
+    <div class="section-title">Imported By (<span id="imported-by-count">0</span>)</div>
+    <ul class="dep-list" id="imported-by-list"></ul>
+  </div>
+
+  <div id="legend">
+    <div class="legend-item"><div class="legend-dot normal"></div> File</div>
+    <div class="legend-item"><div class="legend-dot circular"></div> Circular Dep</div>
+    <div class="legend-item"><div class="legend-dot selected"></div> Selected</div>
+    <div class="legend-item"><div class="legend-dot affected"></div> Affected</div>
+    <div class="legend-item" id="legend-cross-pkg" style="display:none"><div class="legend-line"></div> Cross-Package</div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    let cy;
+    let graphData;
+    let selectedFileId = null;
+    let sizeMode = 'connections'; // 'connections' or 'fileSize'
+
+    var PACKAGE_COLORS = [
+      '#58a6ff', '#3fb950', '#d2a8ff', '#f0883e', '#f778ba',
+      '#a5d6ff', '#d29922', '#79c0ff', '#7ee787', '#ff7b72'
+    ];
+    var packageColorMap = {};
+
+    async function init() {
+      try {
+        const res = await fetch('/api/graph');
+        graphData = await res.json();
+        buildPackageColorMap(graphData);
+        renderStats(graphData);
+        renderGraph(graphData);
+        setupPackageFilter(graphData);
+      } catch (err) {
+        console.error('Failed to load graph data:', err);
+        document.getElementById('cy').innerHTML =
+          '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#f85149;font-size:18px;">Failed to load dependency data</div>';
+      }
+    }
+
+    function buildPackageColorMap(data) {
+      packageColorMap = {};
+      if (data.packages && data.packages.length > 0) {
+        for (var i = 0; i < data.packages.length; i++) {
+          packageColorMap[data.packages[i].name] = PACKAGE_COLORS[i % PACKAGE_COLORS.length];
+        }
+      }
+    }
+
+    function setupPackageFilter(data) {
+      var filter = document.getElementById('pkg-filter');
+      if (data.isMonorepo && data.packages && data.packages.length > 1) {
+        filter.style.display = 'inline-block';
+        var html = '<option value="">All packages</option>';
+        for (var i = 0; i < data.packages.length; i++) {
+          var pkg = data.packages[i];
+          html += '<option value="' + pkg.name + '">' + pkg.name + ' (' + pkg.fileCount + ')</option>';
+        }
+        filter.innerHTML = html;
+        document.getElementById('legend-cross-pkg').style.display = 'flex';
+      }
+    }
+
+    function renderStats(data) {
+      var statsEl = document.getElementById('stats');
+      var circClass = data.stats.circularCount > 0 ? 'circular' : '';
+      var html =
+        '<div><span class="stat-value">' + data.stats.totalFiles + '</span> files</div>' +
+        '<div><span class="stat-value">' + data.stats.totalSizeFormatted + '</span></div>' +
+        '<div><span class="stat-value">' + data.stats.totalEdges + '</span> imports</div>' +
+        '<div class="' + circClass + '"><span class="stat-value ' + circClass + '">' + data.stats.circularCount + '</span> circular</div>';
+      if (data.isMonorepo) {
+        html += '<div><span class="stat-value">' + data.packages.length + '</span> packages</div>';
+      }
+      statsEl.innerHTML = html;
+    }
+
+    function renderGraph(data) {
+      var elements = [];
+      var maxSize = 1;
+      for (var s = 0; s < data.files.length; s++) {
+        if (data.files[s].sizeBytes > maxSize) maxSize = data.files[s].sizeBytes;
+      }
+
+      for (var i = 0; i < data.files.length; i++) {
+        var file = data.files[i];
+        var pkgColor = file.package && packageColorMap[file.package]
+          ? packageColorMap[file.package]
+          : '#58a6ff';
+        elements.push({
+          data: {
+            id: file.id,
+            label: file.name,
+            filePath: file.path,
+            isCircular: file.isCircular,
+            importCount: file.imports.length,
+            importedByCount: file.importedBy.length,
+            sizeBytes: file.sizeBytes || 0,
+            sizeFormatted: file.sizeFormatted || '0 B',
+            pkg: file.package || '',
+            pkgColor: pkgColor,
+          },
+        });
+      }
+
+      for (var j = 0; j < data.edges.length; j++) {
+        var edge = data.edges[j];
+        var isCircularEdge = false;
+        for (var k = 0; k < data.circularDependencies.length; k++) {
+          var cycle = data.circularDependencies[k];
+          if (cycle.indexOf(edge.from) !== -1 && cycle.indexOf(edge.to) !== -1) {
+            isCircularEdge = true;
+            break;
+          }
+        }
+        elements.push({
+          data: {
+            id: edge.from + '->' + edge.to,
+            source: edge.from,
+            target: edge.to,
+            isCircular: isCircularEdge,
+            isCrossPackage: edge.isCrossPackage || false,
+          },
+        });
+      }
+
+      cy = cytoscape({
+        container: document.getElementById('cy'),
+        elements: elements,
+        style: [
+          {
+            selector: 'node',
+            style: {
+              'background-color': data.isMonorepo ? 'data(pkgColor)' : '#58a6ff',
+              'label': 'data(label)',
+              'color': '#c9d1d9',
+              'font-size': '10px',
+              'text-valign': 'bottom',
+              'text-margin-y': 6,
+              'width': 'mapData(importedByCount, 0, 20, 16, 40)',
+              'height': 'mapData(importedByCount, 0, 20, 16, 40)',
+              'border-width': 0,
+              'overlay-padding': 4,
+            },
+          },
+          {
+            selector: 'node[?isCircular]',
+            style: {
+              'background-color': '#f85149',
+              'border-color': '#da3633',
+              'border-width': 2,
+            },
+          },
+          {
+            selector: 'edge',
+            style: {
+              'width': 1,
+              'line-color': '#30363d',
+              'target-arrow-color': '#30363d',
+              'target-arrow-shape': 'triangle',
+              'curve-style': 'bezier',
+              'arrow-scale': 0.7,
+              'opacity': 0.6,
+            },
+          },
+          {
+            selector: 'edge[?isCircular]',
+            style: {
+              'line-color': '#f85149',
+              'target-arrow-color': '#f85149',
+              'width': 2,
+              'opacity': 0.9,
+            },
+          },
+          {
+            selector: 'edge[?isCrossPackage]',
+            style: {
+              'line-color': '#f0883e',
+              'target-arrow-color': '#f0883e',
+              'line-style': 'dashed',
+              'width': 1.5,
+              'opacity': 0.8,
+            },
+          },
+          {
+            selector: 'node:selected',
+            style: {
+              'background-color': '#d2a8ff',
+              'border-color': '#bc8cff',
+              'border-width': 2,
+            },
+          },
+          {
+            selector: '.highlighted',
+            style: {
+              'background-color': '#d2a8ff',
+              'border-color': '#bc8cff',
+              'border-width': 2,
+            },
+          },
+          {
+            selector: '.dimmed',
+            style: {
+              'opacity': 0.15,
+            },
+          },
+          {
+            selector: 'edge.highlighted',
+            style: {
+              'line-color': '#d2a8ff',
+              'target-arrow-color': '#d2a8ff',
+              'width': 2,
+              'opacity': 1,
+            },
+          },
+          {
+            selector: '.affected-direct',
+            style: {
+              'background-color': '#f85149',
+              'border-color': '#da3633',
+              'border-width': 3,
+            },
+          },
+          {
+            selector: '.affected-transitive',
+            style: {
+              'background-color': '#d29922',
+              'border-color': '#bb8009',
+              'border-width': 2,
+            },
+          },
+          {
+            selector: '.deleted-sim',
+            style: {
+              'background-color': '#6e7681',
+              'border-color': '#484f58',
+              'border-width': 3,
+              'border-style': 'dashed',
+              'opacity': 0.5,
+            },
+          },
+        ],
+        layout: {
+          name: 'cose',
+          idealEdgeLength: 100,
+          nodeOverlap: 20,
+          refresh: 20,
+          fit: true,
+          padding: 40,
+          randomize: true,
+          componentSpacing: 100,
+          nodeRepulsion: 8000,
+          edgeElasticity: 100,
+          nestingFactor: 5,
+          gravity: 80,
+          numIter: 1000,
+          animate: false,
+        },
+        minZoom: 0.1,
+        maxZoom: 5,
+        wheelSensitivity: 0.3,
+      });
+
+      cy.on('tap', 'node', function (evt) {
+        var node = evt.target;
+        selectedFileId = node.data('id');
+        showInspector(node.data());
+        highlightConnections(node);
+      });
+
+      cy.on('tap', function (evt) {
+        if (evt.target === cy) {
+          selectedFileId = null;
+          hideInspector();
+          clearHighlights();
+        }
+      });
+    }
+
+    function highlightConnections(node) {
+      clearHighlights();
+      cy.elements().addClass('dimmed');
+      node.removeClass('dimmed').addClass('highlighted');
+      var connectedEdges = node.connectedEdges();
+      connectedEdges.removeClass('dimmed').addClass('highlighted');
+      var connectedNodes = connectedEdges.connectedNodes();
+      connectedNodes.removeClass('dimmed');
+    }
+
+    function clearHighlights() {
+      cy.elements().removeClass('dimmed highlighted affected-direct affected-transitive deleted-sim');
+    }
+
+    function showInspector(data) {
+      var inspector = document.getElementById('inspector');
+      var fileNode = null;
+      for (var i = 0; i < graphData.files.length; i++) {
+        if (graphData.files[i].id === data.id) { fileNode = graphData.files[i]; break; }
+      }
+      if (!fileNode) return;
+
+      document.getElementById('inspector-name').textContent = fileNode.name;
+      document.getElementById('inspector-path').textContent = fileNode.path;
+
+      // Meta: size + package
+      var metaEl = document.getElementById('inspector-meta');
+      var metaHtml = '<div class="meta-item">Size: <span class="meta-value">' + (fileNode.sizeFormatted || '—') + '</span></div>';
+      if (fileNode.package) {
+        var pkgCol = packageColorMap[fileNode.package] || '#58a6ff';
+        metaHtml += '<div class="meta-item"><span class="pkg-badge" style="background:' + pkgCol + '22;color:' + pkgCol + '">' + fileNode.package + '</span></div>';
+      }
+      metaEl.innerHTML = metaHtml;
+
+      var statusEl = document.getElementById('inspector-status');
+      if (fileNode.isCircular) {
+        statusEl.innerHTML = '<span class="badge badge-circular">Circular Dependency</span>';
+      } else {
+        statusEl.innerHTML = '<span class="badge badge-ok">No Cycles</span>';
+      }
+
+      document.getElementById('delete-sim-results').classList.remove('visible');
+
+      document.getElementById('imports-count').textContent = fileNode.imports.length;
+      var importsList = document.getElementById('imports-list');
+      if (fileNode.imports.length === 0) {
+        importsList.innerHTML = '<li style="color:#484f58">No imports</li>';
+      } else {
+        var html = '';
+        for (var j = 0; j < fileNode.imports.length; j++) {
+          var imp = fileNode.imports[j];
+          var isCirc = fileNode.circularWith.indexOf(imp) !== -1;
+          html += '<li class="' + (isCirc ? 'circular' : '') + '" onclick="selectNode(\'' + imp.replace(/'/g, "\\'") + '\')">' + (isCirc ? '&#x1F534; ' : '') + imp + '</li>';
+        }
+        importsList.innerHTML = html;
+      }
+
+      document.getElementById('imported-by-count').textContent = fileNode.importedBy.length;
+      var importedByList = document.getElementById('imported-by-list');
+      if (fileNode.importedBy.length === 0) {
+        importedByList.innerHTML = '<li style="color:#484f58">Not imported by any file</li>';
+      } else {
+        var html2 = '';
+        for (var k = 0; k < fileNode.importedBy.length; k++) {
+          var imp2 = fileNode.importedBy[k];
+          var isCirc2 = fileNode.circularWith.indexOf(imp2) !== -1;
+          html2 += '<li class="' + (isCirc2 ? 'circular' : '') + '" onclick="selectNode(\'' + imp2.replace(/'/g, "\\'") + '\')">' + (isCirc2 ? '&#x1F534; ' : '') + imp2 + '</li>';
+        }
+        importedByList.innerHTML = html2;
+      }
+
+      inspector.classList.add('visible');
+    }
+
+    function hideInspector() {
+      document.getElementById('inspector').classList.remove('visible');
+    }
+
+    function selectNode(id) {
+      var node = cy.getElementById(id);
+      if (node.length) {
+        selectedFileId = id;
+        cy.animate({ center: { eles: node }, zoom: 2 }, { duration: 300 });
+        showInspector(node.data());
+        highlightConnections(node);
+      }
+    }
+
+    // --- Delete Simulation ---
+    function simulateDelete() {
+      if (!selectedFileId) return;
+
+      fetch('/api/simulate-delete/' + encodeURIComponent(selectedFileId))
+        .then(function (res) { return res.json(); })
+        .then(function (result) {
+          var simResults = document.getElementById('delete-sim-results');
+          var simStats = document.getElementById('sim-stats');
+
+          simStats.innerHTML =
+            '<div class="sim-stat"><span class="sim-stat-label">Directly affected</span><span class="sim-stat-value ' + (result.directlyAffected.length > 0 ? 'danger' : '') + '">' + result.directlyAffected.length + ' files</span></div>' +
+            '<div class="sim-stat"><span class="sim-stat-label">Transitively affected</span><span class="sim-stat-value">' + result.transitivelyAffected.length + ' files</span></div>' +
+            '<div class="sim-stat"><span class="sim-stat-label">Total impact</span><span class="sim-stat-value ' + (result.totalAffected > 0 ? 'danger' : '') + '">' + result.totalAffected + ' files</span></div>' +
+            '<div class="sim-stat"><span class="sim-stat-label">Broken imports</span><span class="sim-stat-value ' + (result.brokenImports.length > 0 ? 'danger' : '') + '">' + result.brokenImports.length + '</span></div>';
+
+          var affectedList = document.getElementById('sim-affected-list');
+          var allAffected = [];
+          for (var i = 0; i < result.directlyAffected.length; i++) {
+            allAffected.push({ file: result.directlyAffected[i], type: 'direct' });
+          }
+          for (var j = 0; j < result.transitivelyAffected.length; j++) {
+            allAffected.push({ file: result.transitivelyAffected[j], type: 'transitive' });
+          }
+
+          if (allAffected.length === 0) {
+            affectedList.innerHTML = '<li style="color:#3fb950">No files would be affected</li>';
+          } else {
+            var afHtml = '';
+            for (var k = 0; k < allAffected.length; k++) {
+              var a = allAffected[k];
+              var icon = a.type === 'direct' ? '&#x1F534;' : '&#x1F7E1;';
+              afHtml += '<li class="' + a.type + '" onclick="selectNode(\'' + a.file.replace(/'/g, "\\'") + '\')">' + icon + ' ' + a.file + '</li>';
+            }
+            affectedList.innerHTML = afHtml;
+          }
+
+          simResults.classList.add('visible');
+
+          // Highlight affected nodes on the graph
+          clearHighlights();
+          cy.elements().addClass('dimmed');
+
+          var deletedNode = cy.getElementById(selectedFileId);
+          deletedNode.removeClass('dimmed').addClass('deleted-sim');
+
+          for (var di = 0; di < result.directlyAffected.length; di++) {
+            var dNode = cy.getElementById(result.directlyAffected[di]);
+            if (dNode.length) dNode.removeClass('dimmed').addClass('affected-direct');
+          }
+
+          for (var ti = 0; ti < result.transitivelyAffected.length; ti++) {
+            var tNode = cy.getElementById(result.transitivelyAffected[ti]);
+            if (tNode.length) tNode.removeClass('dimmed').addClass('affected-transitive');
+          }
+
+          deletedNode.connectedEdges().removeClass('dimmed');
+        })
+        .catch(function () {
+          showToast('Failed to simulate deletion', 'error');
+        });
+    }
+
+    // --- Export ---
+    function exportJSON() {
+      window.open('/api/export/json', '_blank');
+      showToast('JSON exported!', 'success');
+    }
+
+    function exportPNG() {
+      if (!cy) return;
+      var png = cy.png({ output: 'blob', bg: '#0d1117', full: true, scale: 2 });
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(png);
+      link.download = 'depmap-graph.png';
+      link.click();
+      URL.revokeObjectURL(link.href);
+      showToast('PNG exported!', 'success');
+    }
+
+    function resetView() {
+      if (!cy) return;
+      clearHighlights();
+      cy.animate({ fit: { padding: 40 } }, { duration: 400 });
+    }
+
+    // --- Toast ---
+    function showToast(message, type) {
+      var toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'visible ' + (type || 'info');
+      setTimeout(function () { toast.className = ''; }, 2500);
+    }
+
+    // --- Search ---
+    document.getElementById('search').addEventListener('input', function (e) {
+      var query = e.target.value.toLowerCase().trim();
+      if (!query) { clearHighlights(); return; }
+
+      cy.elements().addClass('dimmed');
+      var matchingNodes = cy.nodes().filter(function (node) {
+        var label = node.data('label').toLowerCase();
+        var filePath = node.data('filePath').toLowerCase();
+        return label.indexOf(query) !== -1 || filePath.indexOf(query) !== -1;
+      });
+
+      matchingNodes.removeClass('dimmed').addClass('highlighted');
+
+      if (matchingNodes.length === 1) {
+        cy.animate({ center: { eles: matchingNodes }, zoom: 2 }, { duration: 300 });
+      } else if (matchingNodes.length > 1) {
+        cy.animate({ fit: { eles: matchingNodes, padding: 50 } }, { duration: 300 });
+      }
+    });
+
+    // --- Event Listeners ---
+    document.getElementById('close-inspector').addEventListener('click', function () {
+      selectedFileId = null;
+      hideInspector();
+      clearHighlights();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        selectedFileId = null;
+        hideInspector();
+        clearHighlights();
+        document.getElementById('search').value = '';
+      }
+    });
+
+    // --- Size Mode Toggle ---
+    function toggleSizeMode() {
+      var btn = document.getElementById('size-mode-btn');
+      if (sizeMode === 'connections') {
+        sizeMode = 'fileSize';
+        btn.textContent = 'Size: File Size';
+        btn.classList.add('active');
+        cy.style().selector('node').style({
+          'width': 'mapData(sizeBytes, 0, ' + getMaxFileSize() + ', 16, 50)',
+          'height': 'mapData(sizeBytes, 0, ' + getMaxFileSize() + ', 16, 50)',
+        }).update();
+      } else {
+        sizeMode = 'connections';
+        btn.textContent = 'Size: Connections';
+        btn.classList.remove('active');
+        cy.style().selector('node').style({
+          'width': 'mapData(importedByCount, 0, 20, 16, 40)',
+          'height': 'mapData(importedByCount, 0, 20, 16, 40)',
+        }).update();
+      }
+    }
+
+    function getMaxFileSize() {
+      var max = 1;
+      if (graphData && graphData.files) {
+        for (var i = 0; i < graphData.files.length; i++) {
+          if (graphData.files[i].sizeBytes > max) max = graphData.files[i].sizeBytes;
+        }
+      }
+      return max;
+    }
+
+    // --- Package Filter ---
+    function filterByPackage(pkgName) {
+      if (!cy) return;
+      clearHighlights();
+      if (!pkgName) return;
+
+      cy.elements().addClass('dimmed');
+      var matchingNodes = cy.nodes().filter(function (node) {
+        return node.data('pkg') === pkgName;
+      });
+      matchingNodes.removeClass('dimmed').addClass('highlighted');
+      matchingNodes.connectedEdges().removeClass('dimmed');
+
+      if (matchingNodes.length > 0) {
+        cy.animate({ fit: { eles: matchingNodes, padding: 50 } }, { duration: 300 });
+      }
+    }
+
+    // --- Start ---
+    init();
+  </script>
+</body>
+</html>
