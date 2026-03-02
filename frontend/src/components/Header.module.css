@@ -1,0 +1,87 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+  z-index: 10;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.brand {
+  color: var(--accent-blue);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.statValue {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.circular {
+  color: var(--accent-red);
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  padding: 6px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn:hover {
+  background: var(--border);
+  border-color: var(--text-secondary);
+}
+
+.btnActive {
+  background: #1f6feb;
+  border-color: #1f6feb;
+  color: #fff;
+}
+
+.select {
+  padding: 6px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+}
+
+.select:hover {
+  border-color: var(--text-secondary);
+}

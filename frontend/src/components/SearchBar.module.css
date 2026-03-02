@@ -1,0 +1,26 @@
+.container {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  z-index: 10;
+}
+
+.input {
+  width: 280px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-color: var(--accent-blue);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
