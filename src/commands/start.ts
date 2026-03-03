@@ -14,8 +14,14 @@ export async function startCommand(options: Omit<ScanOptions, "output">): Promis
   logger.info("🗺️  DepMap scanning...");
   logger.info("");
 
+  let graph;
   const startTime = Date.now();
-  const graph = await analyzeDependencies({ ...options, exclude: options.exclude });
+  try {
+    graph = await analyzeDependencies({ ...options, exclude: options.exclude });
+  } catch (err) {
+    logger.error(`Scan failed: ${err instanceof Error ? err.message : String(err)}`);
+    process.exit(1);
+  }
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
 
   logger.success(`Found ${graph.stats.totalFiles} files (${graph.stats.totalSizeFormatted})`);

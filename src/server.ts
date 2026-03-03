@@ -32,16 +32,10 @@ function simulateDelete(
   transitivelyAffected: string[];
   totalAffected: number;
   brokenImports: Array<{ file: string; brokenImport: string }>;
-} {
+} | null {
   const fileNode = fileIndex.get(fileId);
   if (!fileNode) {
-    return {
-      deletedFile: fileId,
-      directlyAffected: [],
-      transitivelyAffected: [],
-      totalAffected: 0,
-      brokenImports: [],
-    };
+    return null;
   }
 
   // Direct dependents: files that import the deleted file
@@ -114,6 +108,10 @@ export function startServer(graph: DependencyGraph, port: number): http.Server {
     }
 
     const result = simulateDelete(fileIndex, fileId);
+    if (!result) {
+      res.status(404).json({ error: `File not found: ${fileId}` });
+      return;
+    }
     res.json(result);
   });
 

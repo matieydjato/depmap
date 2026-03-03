@@ -14,7 +14,13 @@ export async function checkCommand(options: Omit<ScanOptions, "output">): Promis
   logger.info("🗺️  DepMap checking for circular dependencies...");
   logger.info("");
 
-  const graph = await analyzeDependencies({ ...options, exclude: options.exclude });
+  let graph;
+  try {
+    graph = await analyzeDependencies({ ...options, exclude: options.exclude });
+  } catch (err) {
+    logger.error(`Check failed: ${err instanceof Error ? err.message : String(err)}`);
+    process.exit(1);
+  }
 
   logger.info(`📁 Scanned ${graph.stats.totalFiles} files (${graph.stats.totalSizeFormatted})`);
   logger.info(`🔗 Found ${graph.stats.totalEdges} import relationships`);

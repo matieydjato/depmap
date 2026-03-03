@@ -14,7 +14,13 @@ export async function analyzeCommand(options: ScanOptions): Promise<void> {
   logger.info("🗺️  DepMap analyzing...");
   logger.info("");
 
-  const graph = await analyzeDependencies(options);
+  let graph;
+  try {
+    graph = await analyzeDependencies(options);
+  } catch (err) {
+    logger.error(`Analysis failed: ${err instanceof Error ? err.message : String(err)}`);
+    process.exit(1);
+  }
   const jsonOutput = JSON.stringify(graph, null, 2);
 
   if (options.output) {

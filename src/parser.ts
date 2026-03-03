@@ -33,8 +33,11 @@ async function loadPathAliases(rootDir: string): Promise<PathAlias[]> {
     const configPath = path.join(rootDir, configFile);
     try {
       const raw = await fs.readFile(configPath, "utf-8");
-      // Strip comments (simple approach for JSON with comments)
-      const stripped = raw.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
+      // Strip comments safely: only outside of quoted strings
+      const stripped = raw.replace(
+        /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\/\/.*$|\/\*[\s\S]*?\*\//gm,
+        (match) => (match.startsWith("/") ? "" : match)
+      );
       config = JSON.parse(stripped);
       break;
     } catch {

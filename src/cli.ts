@@ -28,9 +28,14 @@ program
   .option("-p, --port <number>", "Port for the web server", "3000")
   .option("-e, --exclude <patterns...>", "Glob patterns to exclude", [])
   .action(async (path: string, options: { port: string; exclude: string[] }) => {
+    const port = parseInt(options.port, 10);
+    if (isNaN(port) || port < 1 || port > 65535) {
+      console.error("Error: --port must be a valid number between 1 and 65535");
+      process.exit(1);
+    }
     await startCommand({
       path,
-      port: parseInt(options.port, 10),
+      port,
       exclude: options.exclude,
     });
   });
