@@ -18,7 +18,9 @@
     "lint:fix": "eslint src/ --fix && cd frontend && eslint src/ --fix",
     "format": "prettier --write \"src/**/*.ts\" \"frontend/src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"frontend/src/**/*.{ts,tsx}\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "dependency",
@@ -45,10 +47,12 @@
     "@types/express": "^5.0.6",
     "@types/glob": "^8.1.0",
     "@types/node": "^25.3.3",
+    "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^10.0.2",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.1"
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^4.0.18"
   }
 }
