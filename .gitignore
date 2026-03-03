@@ -6,3 +6,4 @@ public/
 *.js.map
 !src/**
 !frontend/eslint.config.js
+!frontend/src/vite-env.d.ts
