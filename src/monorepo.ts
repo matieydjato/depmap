@@ -7,6 +7,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import YAML from "yaml";
 import { MonorepoPackage } from "./types";
 import { formatBytes } from "./analyzer";
 
@@ -76,15 +77,11 @@ export function detectMonorepo(rootDir: string): WorkspaceConfig {
     if (fs.existsSync(pnpmWorkspacePath)) {
       try {
         const raw = fs.readFileSync(pnpmWorkspacePath, "utf-8");
-        // Simple YAML parsing for packages array
-        const packagesMatch = raw.match(/packages:\s*\n((?:\s*-\s*.+\n?)*)/);
-        if (packagesMatch) {
-          const items = packagesMatch[1].match(/-\s*['"]?([^'"#\n]+)['"]?/g);
-          if (items) {
-            result.workspacePatterns = items.map((item) =>
-              item.replace(/^-\s*['"]?/, "").replace(/['"]?\s*$/, "").trim()
-            );
-          }
+        const parsed = YAML.parse(raw);
+        if (parsed?.packages && Array.isArray(parsed.packages)) {
+          result.workspacePatterns = parsed.packages.map((p: unknown) =>
+            typeof p === "string" ? p : String(p)
+          );
         }
       } catch {
         // Ignore parse errors
