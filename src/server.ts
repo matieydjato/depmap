@@ -8,14 +8,23 @@
 import express from "express";
 import * as path from "path";
 import * as http from "http";
-import { DependencyGraph } from "./types";
+import { DependencyGraph, FileNode } from "./types";
+
+/** Build an O(1) lookup index from file ID → FileNode */
+function buildFileIndex(graph: DependencyGraph): Map<string, FileNode> {
+  const index = new Map<string, FileNode>();
+  for (const file of graph.files) {
+    index.set(file.id, file);
+  }
+  return index;
+}
 
 /**
  * Simulate deleting a file and find all files that would be affected.
  * Returns direct and transitive dependents.
  */
 function simulateDelete(
-  graph: DependencyGraph,
+  fileIndex: Map<string, FileNode>,
   fileId: string
 ): {
   deletedFile: string;
@@ -24,7 +33,7 @@ function simulateDelete(
   totalAffected: number;
   brokenImports: Array<{ file: string; brokenImport: string }>;
 } {
-  const fileNode = graph.files.find((f) => f.id === fileId);
+  const fileNode = fileIndex.get(fileId);
   if (!fileNode) {
     return {
       deletedFile: fileId,
@@ -51,7 +60,7 @@ function simulateDelete(
 
   while (queue.length > 0) {
     const current = queue.shift()!;
-    const currentNode = graph.files.find((f) => f.id === current);
+    const currentNode = fileIndex.get(current);
     if (!currentNode) continue;
 
     for (const dependent of currentNode.importedBy) {
@@ -85,6 +94,9 @@ export function startServer(
 ): http.Server {
   const app = express();
 
+  // Build O(1) file index once at startup
+  const fileIndex = buildFileIndex(graph);
+
   // Serve static frontend files
   const publicDir = path.join(__dirname, "..", "public");
   app.use(express.static(publicDir));
@@ -97,7 +109,7 @@ export function startServer(
   // API endpoint for delete simulation
   app.get("/api/simulate-delete/:fileId", (req, res) => {
     const fileId = decodeURIComponent(req.params.fileId);
-    const result = simulateDelete(graph, fileId);
+    const result = simulateDelete(fileIndex, fileId);
     res.json(result);
   });
 
