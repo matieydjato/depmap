@@ -46,6 +46,7 @@ export default function GraphCanvas({
     packageColorsRef.current = pkgColors;
 
     const maxSize = Math.max(1, ...graph.files.map((f) => f.sizeBytes || 0));
+    const nodeCount = graph.files.length;
 
     const elements: cytoscape.ElementDefinition[] = [];
 
@@ -100,11 +101,15 @@ export default function GraphCanvas({
               : "#58a6ff",
             label: "data(label)",
             color: "#c9d1d9",
-            "font-size": "10px",
+            "font-size": "11px",
             "text-valign": "bottom",
-            "text-margin-y": 6,
-            width: "mapData(importedByCount, 0, 20, 16, 40)",
-            height: "mapData(importedByCount, 0, 20, 16, 40)",
+            "text-margin-y": 8,
+            "text-halign": "center",
+            "text-outline-color": "#0d1117",
+            "text-outline-width": 2,
+            "min-zoomed-font-size": 8,
+            width: "mapData(importedByCount, 0, 20, 36, 72)",
+            height: "mapData(importedByCount, 0, 20, 36, 72)",
             "border-width": 0,
             "overlay-padding": 4,
           },
@@ -151,16 +156,16 @@ export default function GraphCanvas({
         {
           selector: "node:selected",
           style: {
-            "background-color": "#d2a8ff",
-            "border-color": "#bc8cff",
+            "background-color": "#3fb950",
+            "border-color": "#2ea043",
             "border-width": 2,
           },
         },
         {
           selector: ".highlighted",
           style: {
-            "background-color": "#d2a8ff",
-            "border-color": "#bc8cff",
+            "background-color": "#3fb950",
+            "border-color": "#2ea043",
             "border-width": 2,
           },
         },
@@ -171,8 +176,8 @@ export default function GraphCanvas({
         {
           selector: "edge.highlighted",
           style: {
-            "line-color": "#d2a8ff",
-            "target-arrow-color": "#d2a8ff",
+            "line-color": "#3fb950",
+            "target-arrow-color": "#3fb950",
             width: 2,
             opacity: 1,
           },
@@ -206,18 +211,18 @@ export default function GraphCanvas({
       ],
       layout: {
         name: "cose",
-        idealEdgeLength: () => 100,
-        nodeOverlap: 20,
+        idealEdgeLength: () => Math.max(120, 60 + nodeCount * 4),
+        nodeOverlap: 4,
         refresh: 20,
         fit: true,
-        padding: 40,
-        randomize: true,
-        componentSpacing: 100,
-        nodeRepulsion: () => 8000,
-        edgeElasticity: () => 100,
-        nestingFactor: 5,
-        gravity: 80,
-        numIter: 1000,
+        padding: 60,
+        randomize: false,
+        componentSpacing: Math.max(150, nodeCount * 5),
+        nodeRepulsion: () => Math.max(10000, nodeCount * 500),
+        edgeElasticity: () => 120,
+        nestingFactor: 1.2,
+        gravity: Math.max(0.25, 15 / nodeCount),
+        numIter: Math.max(1500, nodeCount * 50),
         animate: false,
       } as cytoscape.CoseLayoutOptions,
       minZoom: 0.1,
@@ -368,16 +373,16 @@ export default function GraphCanvas({
       cy.style()
         .selector("node")
         .style({
-          width: `mapData(sizeBytes, 0, ${maxSize}, 16, 50)`,
-          height: `mapData(sizeBytes, 0, ${maxSize}, 16, 50)`,
+          width: `mapData(sizeBytes, 0, ${maxSize}, 36, 80)`,
+          height: `mapData(sizeBytes, 0, ${maxSize}, 36, 80)`,
         })
         .update();
     } else {
       cy.style()
         .selector("node")
         .style({
-          width: "mapData(importedByCount, 0, 20, 16, 40)",
-          height: "mapData(importedByCount, 0, 20, 16, 40)",
+          width: "mapData(importedByCount, 0, 20, 36, 72)",
+          height: "mapData(importedByCount, 0, 20, 36, 72)",
         })
         .update();
     }

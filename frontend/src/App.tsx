@@ -4,6 +4,8 @@ import GraphCanvas from "./components/GraphCanvas";
 import Inspector from "./components/Inspector";
 import SearchBar from "./components/SearchBar";
 import Legend from "./components/Legend";
+import ZoomControls from "./components/ZoomControls";
+import StatusBar from "./components/StatusBar";
 import Toast from "./components/Toast";
 import { useGraph } from "./hooks/useGraph";
 import { useSelection } from "./hooks/useSelection";
@@ -99,8 +101,10 @@ export default function App() {
         />
 
         <Legend isMonorepo={graph.isMonorepo} />
+        <ZoomControls cy={cyRef} />
       </div>
 
+      <StatusBar />
       <Toast toast={toast} />
     </>
   );
