@@ -1,9 +1,5 @@
 import type { DependencyGraph, FileNode, DeleteSimResult } from '../types';
-
-const PACKAGE_COLORS = [
-  '#58a6ff', '#3fb950', '#d2a8ff', '#f0883e', '#f778ba',
-  '#a5d6ff', '#d29922', '#79c0ff', '#7ee787', '#ff7b72',
-];
+import { PACKAGE_COLORS } from '../constants';
 
 interface InspectorProps {
   file: FileNode | null;
