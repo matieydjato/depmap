@@ -5,3 +5,4 @@ public/
 *.d.ts
 *.js.map
 !src/**
+!frontend/eslint.config.js
