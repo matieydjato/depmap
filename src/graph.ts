@@ -95,16 +95,16 @@ function deduplicateCycles(cycles: string[][]): string[][] {
  * @param workspaceConfig - Monorepo workspace configuration (optional)
  * @returns Complete DependencyGraph
  */
-export function buildGraph(
+export async function buildGraph(
   rootDir: string,
   parsedFiles: ParsedFile[],
   workspaceConfig?: WorkspaceConfig
-): DependencyGraph {
+): Promise<DependencyGraph> {
   const absoluteRoot = path.resolve(rootDir);
 
-  // Analyze file sizes
+  // Analyze file sizes (in parallel)
   const filePaths = parsedFiles.map((pf) => pf.filePath);
-  const fileSizes = analyzeFileSizes(absoluteRoot, filePaths);
+  const fileSizes = await analyzeFileSizes(absoluteRoot, filePaths);
 
   // Build adjacency list
   const adjacencyList = new Map<string, string[]>();

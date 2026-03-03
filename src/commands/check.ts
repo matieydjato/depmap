@@ -16,7 +16,7 @@ export async function checkCommand(
   logger.info("🗺️  DepMap checking for circular dependencies...");
   logger.info("");
 
-  const graph = analyzeDependencies({ ...options, exclude: options.exclude });
+  const graph = await analyzeDependencies({ ...options, exclude: options.exclude });
 
   logger.info(`📁 Scanned ${graph.stats.totalFiles} files (${graph.stats.totalSizeFormatted})`);
   logger.info(`🔗 Found ${graph.stats.totalEdges} import relationships`);

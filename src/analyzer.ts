@@ -5,7 +5,7 @@
  * Provides per-file and per-module size estimates via static analysis.
  */
 
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import * as path from "path";
 
 /** Size info for a single file */
@@ -33,12 +33,12 @@ export function formatBytes(bytes: number): string {
 /**
  * Get the file size for a single file.
  */
-function getFileSize(rootDir: string, relativePath: string): FileSize {
+async function getFileSize(rootDir: string, relativePath: string): Promise<FileSize> {
   const absolutePath = path.join(rootDir, relativePath);
   let sizeBytes = 0;
 
   try {
-    const stat = fs.statSync(absolutePath);
+    const stat = await fs.stat(absolutePath);
     sizeBytes = stat.size;
   } catch {
     // File not readable — size is 0
@@ -52,22 +52,25 @@ function getFileSize(rootDir: string, relativePath: string): FileSize {
 }
 
 /**
- * Analyze file sizes for all files.
+ * Analyze file sizes for all files in parallel.
  *
  * @param rootDir - Absolute path to project root
  * @param filePaths - Relative paths of all files
  * @returns Map of relative path → FileSize
  */
-export function analyzeFileSizes(
+export async function analyzeFileSizes(
   rootDir: string,
   filePaths: string[]
-): Map<string, FileSize> {
+): Promise<Map<string, FileSize>> {
   const absoluteRoot = path.resolve(rootDir);
-  const sizeMap = new Map<string, FileSize>();
 
-  for (const filePath of filePaths) {
-    const size = getFileSize(absoluteRoot, filePath);
-    sizeMap.set(filePath, size);
+  const sizes = await Promise.all(
+    filePaths.map((filePath) => getFileSize(absoluteRoot, filePath))
+  );
+
+  const sizeMap = new Map<string, FileSize>();
+  for (const size of sizes) {
+    sizeMap.set(size.filePath, size);
   }
 
   return sizeMap;

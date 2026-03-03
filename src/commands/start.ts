@@ -17,7 +17,7 @@ export async function startCommand(
   logger.info("");
 
   const startTime = Date.now();
-  const graph = analyzeDependencies({ ...options, exclude: options.exclude });
+  const graph = await analyzeDependencies({ ...options, exclude: options.exclude });
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
 
   logger.success(`Found ${graph.stats.totalFiles} files (${graph.stats.totalSizeFormatted})`);

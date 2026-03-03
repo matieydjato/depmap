@@ -16,23 +16,23 @@ import { DependencyGraph, ScanOptions } from "./types";
 /**
  * Run the full scanning + parsing + graph-building pipeline.
  */
-export function analyzeDependencies(options: ScanOptions): DependencyGraph {
+export async function analyzeDependencies(options: ScanOptions): Promise<DependencyGraph> {
   const rootDir = path.resolve(options.path);
 
   // Merge CLI options with .depmaprc config
-  const mergedOptions = mergeWithConfig(options, rootDir);
+  const mergedOptions = await mergeWithConfig(options, rootDir);
 
   // Detect monorepo
-  const workspaceConfig = detectMonorepo(rootDir);
+  const workspaceConfig = await detectMonorepo(rootDir);
 
   // Step 1: Scan files
-  const filePaths = scanFiles(rootDir, mergedOptions.exclude);
+  const filePaths = await scanFiles(rootDir, mergedOptions.exclude);
 
   // Step 2: Parse imports (with monorepo awareness)
-  const parsedFiles = parseFiles(rootDir, filePaths, workspaceConfig.isMonorepo ? workspaceConfig : undefined);
+  const parsedFiles = await parseFiles(rootDir, filePaths, workspaceConfig.isMonorepo ? workspaceConfig : undefined);
 
   // Step 3: Build graph (with sizes and monorepo info)
-  const graph = buildGraph(rootDir, parsedFiles, workspaceConfig.isMonorepo ? workspaceConfig : undefined);
+  const graph = await buildGraph(rootDir, parsedFiles, workspaceConfig.isMonorepo ? workspaceConfig : undefined);
 
   return graph;
 }

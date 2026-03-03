@@ -5,7 +5,7 @@
  * respects .gitignore and user-specified excludes.
  */
 
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import * as path from "path";
 import ignore, { Ignore } from "ignore";
 
@@ -33,13 +33,15 @@ const DEFAULT_EXCLUDES = [
 /**
  * Load and parse the project's .gitignore file (if it exists)
  */
-function loadGitignore(rootDir: string): Ignore {
+async function loadGitignore(rootDir: string): Promise<Ignore> {
   const ig = ignore();
   const gitignorePath = path.join(rootDir, ".gitignore");
 
-  if (fs.existsSync(gitignorePath)) {
-    const content = fs.readFileSync(gitignorePath, "utf-8");
+  try {
+    const content = await fs.readFile(gitignorePath, "utf-8");
     ig.add(content);
+  } catch {
+    // No .gitignore — that's fine
   }
 
   return ig;
@@ -52,12 +54,12 @@ function loadGitignore(rootDir: string): Ignore {
  * @param userExcludes - Additional glob patterns to exclude
  * @returns Array of relative file paths
  */
-export function scanFiles(
+export async function scanFiles(
   rootDir: string,
   userExcludes: string[] = []
-): string[] {
+): Promise<string[]> {
   const absoluteRoot = path.resolve(rootDir);
-  const ig = loadGitignore(absoluteRoot);
+  const ig = await loadGitignore(absoluteRoot);
 
   // Add default excludes
   ig.add(DEFAULT_EXCLUDES);
@@ -69,10 +71,10 @@ export function scanFiles(
 
   const results: string[] = [];
 
-  function walkDir(dir: string): void {
-    let entries: fs.Dirent[];
+  async function walkDir(dir: string): Promise<void> {
+    let entries: import("fs").Dirent[];
     try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
+      entries = await fs.readdir(dir, { withFileTypes: true });
     } catch {
       // Skip directories we can't read
       return;
@@ -88,7 +90,7 @@ export function scanFiles(
       }
 
       if (entry.isDirectory()) {
-        walkDir(fullPath);
+        await walkDir(fullPath);
       } else if (entry.isFile()) {
         const ext = path.extname(entry.name).toLowerCase();
         if (SUPPORTED_EXTENSIONS.has(ext)) {
@@ -98,6 +100,6 @@ export function scanFiles(
     }
   }
 
-  walkDir(absoluteRoot);
+  await walkDir(absoluteRoot);
   return results.sort();
 }

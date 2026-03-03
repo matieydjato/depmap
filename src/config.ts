@@ -5,10 +5,9 @@
  * Merges with CLI options (CLI options take precedence).
  */
 
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import * as path from "path";
 import { ScanOptions } from "./types";
-import { logger } from "./logger";
 
 /** Configuration that can be set in .depmaprc */
 export interface DepMapConfig {
@@ -37,21 +36,19 @@ const CONFIG_FILES = [
  * @param rootDir - Project root directory to search for config files
  * @returns Parsed config, or empty object if no config found
  */
-export function loadConfig(rootDir: string): DepMapConfig {
+export async function loadConfig(rootDir: string): Promise<DepMapConfig> {
   const absoluteRoot = path.resolve(rootDir);
 
   for (const configFile of CONFIG_FILES) {
     const configPath = path.join(absoluteRoot, configFile);
 
-    if (fs.existsSync(configPath)) {
-      try {
-        const raw = fs.readFileSync(configPath, "utf-8");
-        const config = JSON.parse(raw);
-        return config as DepMapConfig;
-      } catch (err) {
-        logger.warn(`Failed to parse ${configFile}: ${(err as Error).message}`);
-        return {};
-      }
+    try {
+      const raw = await fs.readFile(configPath, "utf-8");
+      const config = JSON.parse(raw);
+      return config as DepMapConfig;
+    } catch {
+      // File doesn't exist or can't be parsed — try next
+      continue;
     }
   }
 
@@ -62,11 +59,11 @@ export function loadConfig(rootDir: string): DepMapConfig {
  * Merge config file settings with CLI options.
  * CLI options take precedence over config file values.
  */
-export function mergeWithConfig(
+export async function mergeWithConfig(
   cliOptions: ScanOptions,
   rootDir: string
-): ScanOptions {
-  const config = loadConfig(rootDir);
+): Promise<ScanOptions> {
+  const config = await loadConfig(rootDir);
 
   return {
     path: cliOptions.path || config.path || ".",

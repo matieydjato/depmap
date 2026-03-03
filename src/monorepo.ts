@@ -5,7 +5,7 @@
  * and resolves cross-package imports.
  */
 
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import * as path from "path";
 import YAML from "yaml";
 import { MonorepoPackage } from "./types";
@@ -36,7 +36,7 @@ interface DiscoveredPackage {
 /**
  * Detect if the given directory is a monorepo and discover packages.
  */
-export function detectMonorepo(rootDir: string): WorkspaceConfig {
+export async function detectMonorepo(rootDir: string): Promise<WorkspaceConfig> {
   const absoluteRoot = path.resolve(rootDir);
   const result: WorkspaceConfig = {
     isMonorepo: false,
@@ -48,14 +48,10 @@ export function detectMonorepo(rootDir: string): WorkspaceConfig {
   // 1. Try reading root package.json for "workspaces" field
   const packageJsonPath = path.join(absoluteRoot, "package.json");
 
-  if (!fs.existsSync(packageJsonPath)) {
-    return result;
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let rootPackageJson: Record<string, any>;
   try {
-    const raw = fs.readFileSync(packageJsonPath, "utf-8");
+    const raw = await fs.readFile(packageJsonPath, "utf-8");
     rootPackageJson = JSON.parse(raw);
   } catch {
     return result;
@@ -75,34 +71,30 @@ export function detectMonorepo(rootDir: string): WorkspaceConfig {
   // 2. Try reading pnpm-workspace.yaml
   if (result.workspacePatterns.length === 0) {
     const pnpmWorkspacePath = path.join(absoluteRoot, "pnpm-workspace.yaml");
-    if (fs.existsSync(pnpmWorkspacePath)) {
-      try {
-        const raw = fs.readFileSync(pnpmWorkspacePath, "utf-8");
-        const parsed = YAML.parse(raw);
-        if (parsed?.packages && Array.isArray(parsed.packages)) {
-          result.workspacePatterns = parsed.packages.map((p: unknown) =>
-            typeof p === "string" ? p : String(p)
-          );
-        }
-      } catch {
-        // Ignore parse errors
+    try {
+      const raw = await fs.readFile(pnpmWorkspacePath, "utf-8");
+      const parsed = YAML.parse(raw);
+      if (parsed?.packages && Array.isArray(parsed.packages)) {
+        result.workspacePatterns = parsed.packages.map((p: unknown) =>
+          typeof p === "string" ? p : String(p)
+        );
       }
+    } catch {
+      // No pnpm-workspace.yaml or parse error
     }
   }
 
   // 3. Try reading lerna.json
   if (result.workspacePatterns.length === 0) {
     const lernaPath = path.join(absoluteRoot, "lerna.json");
-    if (fs.existsSync(lernaPath)) {
-      try {
-        const raw = fs.readFileSync(lernaPath, "utf-8");
-        const lernaConfig = JSON.parse(raw);
-        if (lernaConfig.packages && Array.isArray(lernaConfig.packages)) {
-          result.workspacePatterns = lernaConfig.packages;
-        }
-      } catch {
-        // Ignore
+    try {
+      const raw = await fs.readFile(lernaPath, "utf-8");
+      const lernaConfig = JSON.parse(raw);
+      if (lernaConfig.packages && Array.isArray(lernaConfig.packages)) {
+        result.workspacePatterns = lernaConfig.packages;
       }
+    } catch {
+      // No lerna.json or parse error
     }
   }
 
@@ -114,38 +106,32 @@ export function detectMonorepo(rootDir: string): WorkspaceConfig {
 
   // 4. Discover actual packages by expanding workspace patterns
   for (const pattern of result.workspacePatterns) {
-    // Convert glob pattern to directory search
-    // Handle patterns like "packages/*", "apps/*", "libs/**"
     const cleanPattern = pattern.replace(/\*\*?/g, "");
     const searchDir = path.join(absoluteRoot, cleanPattern);
 
-    if (!fs.existsSync(searchDir)) continue;
-
     try {
-      const entries = fs.readdirSync(searchDir, { withFileTypes: true });
+      const entries = await fs.readdir(searchDir, { withFileTypes: true });
       for (const entry of entries) {
         if (!entry.isDirectory()) continue;
 
         const pkgDir = path.join(searchDir, entry.name);
         const pkgJsonPath = path.join(pkgDir, "package.json");
 
-        if (fs.existsSync(pkgJsonPath)) {
-          try {
-            const pkgRaw = fs.readFileSync(pkgJsonPath, "utf-8");
-            const pkgJson = JSON.parse(pkgRaw);
-            const pkgName = pkgJson.name || entry.name;
-            const relativeDir = path.relative(absoluteRoot, pkgDir).replace(/\\/g, "/");
+        try {
+          const pkgRaw = await fs.readFile(pkgJsonPath, "utf-8");
+          const pkgJson = JSON.parse(pkgRaw);
+          const pkgName = pkgJson.name || entry.name;
+          const relativeDir = path.relative(absoluteRoot, pkgDir).replace(/\\/g, "/");
 
-            result.packages.push({
-              name: pkgName,
-              dir: relativeDir,
-              absoluteDir: pkgDir,
-            });
+          result.packages.push({
+            name: pkgName,
+            dir: relativeDir,
+            absoluteDir: pkgDir,
+          });
 
-            result.packageNameToPath.set(pkgName, relativeDir);
-          } catch {
-            // Skip packages with invalid package.json
-          }
+          result.packageNameToPath.set(pkgName, relativeDir);
+        } catch {
+          // Skip packages with invalid/missing package.json
         }
       }
     } catch {

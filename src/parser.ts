@@ -7,7 +7,7 @@
  */
 
 import * as path from "path";
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import { Project, SourceFile, SyntaxKind } from "ts-morph";
 import { WorkspaceConfig, resolveMonorepoImport } from "./monorepo";
 
@@ -21,7 +21,7 @@ interface PathAlias {
 /**
  * Load path aliases from tsconfig.json or jsconfig.json.
  */
-function loadPathAliases(rootDir: string): PathAlias[] {
+async function loadPathAliases(rootDir: string): Promise<PathAlias[]> {
   const aliases: PathAlias[] = [];
 
   // Try tsconfig.json first, then jsconfig.json
@@ -31,16 +31,14 @@ function loadPathAliases(rootDir: string): PathAlias[] {
 
   for (const configFile of configFiles) {
     const configPath = path.join(rootDir, configFile);
-    if (fs.existsSync(configPath)) {
-      try {
-        const raw = fs.readFileSync(configPath, "utf-8");
-        // Strip comments (simple approach for JSON with comments)
-        const stripped = raw.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
-        config = JSON.parse(stripped);
-        break;
-      } catch {
-        continue;
-      }
+    try {
+      const raw = await fs.readFile(configPath, "utf-8");
+      // Strip comments (simple approach for JSON with comments)
+      const stripped = raw.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
+      config = JSON.parse(stripped);
+      break;
+    } catch {
+      continue;
     }
   }
 
@@ -238,19 +236,32 @@ function extractImportSpecifiers(sourceFile: SourceFile): string[] {
  * @param filePaths - Relative file paths to parse
  * @returns Array of parsed file data with resolved imports
  */
-export function parseFiles(
+export async function parseFiles(
   rootDir: string,
   filePaths: string[],
   workspaceConfig?: WorkspaceConfig
-): ParsedFile[] {
+): Promise<ParsedFile[]> {
   const absoluteRoot = path.resolve(rootDir);
   const knownFiles = new Set(filePaths);
 
   // Load path aliases from tsconfig/jsconfig
-  const pathAliases = loadPathAliases(absoluteRoot);
+  const pathAliases = await loadPathAliases(absoluteRoot);
   if (pathAliases.length > 0) {
     // Log for debugging (visible in CLI output)
   }
+
+  // Read all file contents in parallel
+  const fileContents = await Promise.all(
+    filePaths.map(async (filePath) => {
+      const absolutePath = path.join(absoluteRoot, filePath);
+      try {
+        const content = await fs.readFile(absolutePath, "utf-8");
+        return { filePath, content };
+      } catch {
+        return { filePath, content: null };
+      }
+    })
+  );
 
   // Create a ts-morph project (non-strict, skip type checking)
   const project = new Project({
@@ -266,16 +277,13 @@ export function parseFiles(
 
   const results: ParsedFile[] = [];
 
-  for (const filePath of filePaths) {
-    const absolutePath = path.join(absoluteRoot, filePath);
-
-    let content: string;
-    try {
-      content = fs.readFileSync(absolutePath, "utf-8");
-    } catch {
+  for (const { filePath, content } of fileContents) {
+    if (content === null) {
       // Skip files we can't read
       continue;
     }
+
+    const absolutePath = path.join(absoluteRoot, filePath);
 
     // Create a source file in the ts-morph project
     const sourceFile = project.createSourceFile(absolutePath, content, {
