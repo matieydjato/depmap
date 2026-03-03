@@ -38,7 +38,7 @@ jobs:
         run: npx eslint src/
 
       - name: Lint frontend
-        run: npx eslint .
+        run: npm run lint
         working-directory: frontend
 
       - name: Check formatting
