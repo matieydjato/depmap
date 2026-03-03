@@ -16,7 +16,6 @@ import { checkCommand } from "./commands/check";
 import * as path from "path";
 import * as fs from "fs";
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const pkg: { version: string } = JSON.parse(
   fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf-8")
 );
