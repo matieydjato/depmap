@@ -27,12 +27,16 @@ export default function Inspector({
 
   return (
     <div
+      role="dialog"
+      aria-label={`Inspector: ${file.name}`}
+      onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
       className="absolute top-3 right-4 w-[360px] max-h-[calc(100vh-84px)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg p-4 z-10 overflow-y-auto text-[13px]"
       style={{ animation: "slideInRight 0.15s ease-out" }}
     >
       <button
         className="absolute top-3 right-3 bg-transparent border-none text-[var(--color-text-secondary)] text-lg leading-none cursor-pointer hover:text-[var(--color-text-primary)]"
         onClick={onClose}
+        aria-label="Close inspector"
       >
         &times;
       </button>

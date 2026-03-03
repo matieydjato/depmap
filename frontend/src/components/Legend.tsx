@@ -4,7 +4,11 @@ interface LegendProps {
 
 export default function Legend({ isMonorepo }: LegendProps) {
   return (
-    <div className="absolute bottom-4 left-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-[6px] py-2.5 px-3.5 z-10 text-xs flex gap-4">
+    <div
+      role="complementary"
+      aria-label="Graph legend"
+      className="absolute bottom-4 left-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-[6px] py-2.5 px-3.5 z-10 text-xs flex gap-4"
+    >
       <div className="flex items-center gap-1.5">
         <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-accent-blue)]" /> File
       </div>

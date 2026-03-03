@@ -105,6 +105,7 @@ export default function Header({
             className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-[6px] text-[var(--color-text-secondary)] text-xs transition-all duration-150 hover:bg-[var(--color-border)] hover:border-[var(--color-text-secondary)]"
             onClick={onExportJSON}
             title="Export graph data as JSON"
+            aria-label="Export graph data as JSON"
           >
             Export JSON
           </button>
@@ -112,6 +113,7 @@ export default function Header({
             className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-[6px] text-[var(--color-text-secondary)] text-xs transition-all duration-150 hover:bg-[var(--color-border)] hover:border-[var(--color-text-secondary)]"
             onClick={onExportPNG}
             title="Export graph as PNG image"
+            aria-label="Export graph as PNG image"
           >
             Export PNG
           </button>
@@ -119,6 +121,7 @@ export default function Header({
             className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-[6px] text-[var(--color-text-secondary)] text-xs transition-all duration-150 hover:bg-[var(--color-border)] hover:border-[var(--color-text-secondary)]"
             onClick={onResetView}
             title="Reset zoom and position"
+            aria-label="Reset zoom and position"
           >
             Reset View
           </button>
