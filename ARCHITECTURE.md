@@ -83,7 +83,8 @@ CLI args + config
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/graph` | Full dependency graph (nodes, edges, stats, circular deps) |
-| `GET` | `/api/simulate-delete/:fileId` | Simulates deleting a file — returns `orphanedFiles` and `affectedFiles` |
+| `GET` | `/api/simulate-delete/:fileId` | Simulates deleting a file — returns `directlyAffected`, `transitivelyAffected`, `brokenImports`, `totalAffected` (404 if file not found) |
+| `GET` | `/api/export/json` | Downloads the graph as a JSON file attachment |
 
 Both endpoints return JSON. The server binds to `127.0.0.1` only for security.
 
