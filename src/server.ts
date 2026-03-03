@@ -5,7 +5,7 @@
  * API endpoints for graph data, delete simulation, and export.
  */
 
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import * as path from "path";
 import * as http from "http";
 import { DependencyGraph, FileNode } from "./types";
@@ -109,6 +109,13 @@ export function startServer(
   // API endpoint for delete simulation
   app.get("/api/simulate-delete/:fileId", (req, res) => {
     const fileId = decodeURIComponent(req.params.fileId);
+
+    // Validate: reject empty or excessively long file IDs
+    if (!fileId || fileId.length > 500) {
+      res.status(400).json({ error: "Invalid file ID" });
+      return;
+    }
+
     const result = simulateDelete(fileIndex, fileId);
     res.json(result);
   });
@@ -123,6 +130,12 @@ export function startServer(
   // Fallback to index.html for SPA routing (Express v5 syntax)
   app.get("/{*splat}", (_req, res) => {
     res.sendFile(path.join(publicDir, "index.html"));
+  });
+
+  // Global error handler — prevents unhandled errors from crashing the server
+  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    console.error(`[depmap] Server error: ${err.message}`);
+    res.status(500).json({ error: "Internal server error" });
   });
 
   const server = app.listen(port, "127.0.0.1", () => {
