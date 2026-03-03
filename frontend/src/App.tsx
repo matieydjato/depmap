@@ -9,6 +9,7 @@ import { useGraph } from "./hooks/useGraph";
 import { useSelection } from "./hooks/useSelection";
 import { useExport } from "./hooks/useExport";
 import { useToast } from "./hooks/useToast";
+import { useDebouncedValue } from "./hooks/useDebouncedValue";
 import type { Core } from "cytoscape";
 
 type SizeMode = "connections" | "fileSize";
@@ -19,6 +20,7 @@ export default function App() {
   const { selectedFile, deleteSim, handleNodeSelect, handleSimulateDelete, clearSelection } =
     useSelection(graph, (msg) => showToast(msg, "error"));
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebouncedValue(searchQuery, 200);
   const [sizeMode, setSizeMode] = useState<SizeMode>("connections");
   const [packageFilter, setPackageFilter] = useState("");
   const [cyRef, setCyRef] = useState<Core | null>(null);
@@ -68,7 +70,7 @@ export default function App() {
         <GraphCanvas
           graph={graph}
           sizeMode={sizeMode}
-          searchQuery={searchQuery}
+          searchQuery={debouncedSearch}
           packageFilter={packageFilter}
           selectedFileId={selectedFile?.id || null}
           deleteSim={deleteSim}

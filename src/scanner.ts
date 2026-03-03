@@ -70,6 +70,8 @@ export async function scanFiles(rootDir: string, userExcludes: string[] = []): P
       return;
     }
 
+    const subdirs: Promise<void>[] = [];
+
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
       const relativePath = path.relative(absoluteRoot, fullPath).replace(/\\/g, "/");
@@ -80,7 +82,7 @@ export async function scanFiles(rootDir: string, userExcludes: string[] = []): P
       }
 
       if (entry.isDirectory()) {
-        await walkDir(fullPath);
+        subdirs.push(walkDir(fullPath));
       } else if (entry.isFile()) {
         const ext = path.extname(entry.name).toLowerCase();
         if (SUPPORTED_EXTENSIONS.has(ext)) {
@@ -88,6 +90,8 @@ export async function scanFiles(rootDir: string, userExcludes: string[] = []): P
         }
       }
     }
+
+    await Promise.all(subdirs);
   }
 
   await walkDir(absoluteRoot);
