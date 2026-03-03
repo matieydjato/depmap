@@ -26,7 +26,8 @@ function loadPathAliases(rootDir: string): PathAlias[] {
 
   // Try tsconfig.json first, then jsconfig.json
   const configFiles = ["tsconfig.json", "jsconfig.json"];
-  let config: any = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let config: Record<string, any> | null = null;
 
   for (const configFile of configFiles) {
     const configPath = path.join(rootDir, configFile);

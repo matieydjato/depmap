@@ -47,16 +47,17 @@ export function detectMonorepo(rootDir: string): WorkspaceConfig {
 
   // 1. Try reading root package.json for "workspaces" field
   const packageJsonPath = path.join(absoluteRoot, "package.json");
-  let rootPackageJson: any = null;
 
-  if (fs.existsSync(packageJsonPath)) {
-    try {
-      const raw = fs.readFileSync(packageJsonPath, "utf-8");
-      rootPackageJson = JSON.parse(raw);
-    } catch {
-      return result;
-    }
-  } else {
+  if (!fs.existsSync(packageJsonPath)) {
+    return result;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rootPackageJson: Record<string, any>;
+  try {
+    const raw = fs.readFileSync(packageJsonPath, "utf-8");
+    rootPackageJson = JSON.parse(raw);
+  } catch {
     return result;
   }
 

@@ -13,7 +13,7 @@ import {
   MonorepoPackage,
 } from "./types";
 import { ParsedFile } from "./parser";
-import { analyzeFileSizes, formatBytes, FileSize } from "./analyzer";
+import { analyzeFileSizes, formatBytes } from "./analyzer";
 import { WorkspaceConfig, getFilePackage, buildPackageSummaries } from "./monorepo";
 
 /**
