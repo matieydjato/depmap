@@ -13,13 +13,20 @@ import { Command } from "commander";
 import { startCommand } from "./commands/start";
 import { analyzeCommand } from "./commands/analyze";
 import { checkCommand } from "./commands/check";
+import * as path from "path";
+import * as fs from "fs";
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const pkg: { version: string } = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf-8")
+);
 
 const program = new Command();
 
 program
   .name("depmap")
   .description("🗺️  DepMap — Live Dependency Visualizer for JS/TS projects")
-  .version("0.1.0");
+  .version(pkg.version);
 
 program
   .command("start")
