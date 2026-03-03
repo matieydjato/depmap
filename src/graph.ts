@@ -6,12 +6,7 @@
  */
 
 import * as path from "path";
-import {
-  FileNode,
-  DependencyEdge,
-  DependencyGraph,
-  MonorepoPackage,
-} from "./types";
+import { FileNode, DependencyEdge, DependencyGraph, MonorepoPackage } from "./types";
 import { ParsedFile } from "./parser";
 import { analyzeFileSizes, formatBytes } from "./analyzer";
 import { WorkspaceConfig, getFilePackage, buildPackageSummaries } from "./monorepo";
@@ -22,9 +17,7 @@ import { WorkspaceConfig, getFilePackage, buildPackageSummaries } from "./monore
  * Returns an array of cycles, where each cycle is an array of file paths
  * forming a circular dependency chain.
  */
-function detectCircularDependencies(
-  adjacencyList: Map<string, string[]>
-): string[][] {
+function detectCircularDependencies(adjacencyList: Map<string, string[]>): string[][] {
   const cycles: string[][] = [];
   const visited = new Set<string>();
   const inStack = new Set<string>();
@@ -176,14 +169,10 @@ export async function buildGraph(
       imports: pf.imports,
       importedBy: importedByMap.get(pf.filePath) || [],
       isCircular: circularFiles.has(pf.filePath),
-      circularWith: circularWithMap.has(pf.filePath)
-        ? [...circularWithMap.get(pf.filePath)!]
-        : [],
+      circularWith: circularWithMap.has(pf.filePath) ? [...circularWithMap.get(pf.filePath)!] : [],
       sizeBytes,
       sizeFormatted: size?.sizeFormatted ?? "0 B",
-      package: isMonorepo
-        ? getFilePackage(pf.filePath, monoPackages)
-        : undefined,
+      package: isMonorepo ? getFilePackage(pf.filePath, monoPackages) : undefined,
     };
   });
 

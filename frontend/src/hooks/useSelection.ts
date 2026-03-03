@@ -2,9 +2,9 @@
  * useSelection — Manages node selection and delete simulation state.
  */
 
-import { useState, useCallback } from 'react';
-import type { DependencyGraph, FileNode, DeleteSimResult } from '../types';
-import { fetchDeleteSim } from '../api';
+import { useState, useCallback } from "react";
+import type { DependencyGraph, FileNode, DeleteSimResult } from "../types";
+import { fetchDeleteSim } from "../api";
 
 interface UseSelectionReturn {
   /** Currently selected file node */
@@ -27,21 +27,24 @@ interface UseSelectionReturn {
  */
 export function useSelection(
   graph: DependencyGraph | null,
-  onError: (message: string) => void,
+  onError: (message: string) => void
 ): UseSelectionReturn {
   const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
   const [deleteSim, setDeleteSim] = useState<DeleteSimResult | null>(null);
 
-  const handleNodeSelect = useCallback((fileId: string | null) => {
-    if (!fileId || !graph) {
-      setSelectedFile(null);
+  const handleNodeSelect = useCallback(
+    (fileId: string | null) => {
+      if (!fileId || !graph) {
+        setSelectedFile(null);
+        setDeleteSim(null);
+        return;
+      }
+      const file = graph.files.find((f) => f.id === fileId) || null;
+      setSelectedFile(file);
       setDeleteSim(null);
-      return;
-    }
-    const file = graph.files.find(f => f.id === fileId) || null;
-    setSelectedFile(file);
-    setDeleteSim(null);
-  }, [graph]);
+    },
+    [graph]
+  );
 
   const handleSimulateDelete = useCallback(async () => {
     if (!selectedFile) return;
@@ -49,7 +52,7 @@ export function useSelection(
       const result = await fetchDeleteSim(selectedFile.id);
       setDeleteSim(result);
     } catch {
-      onError('Failed to simulate deletion');
+      onError("Failed to simulate deletion");
     }
   }, [selectedFile, onError]);
 

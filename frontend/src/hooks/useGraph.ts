@@ -2,9 +2,9 @@
  * useGraph — Fetches and manages the dependency graph data.
  */
 
-import { useState, useEffect } from 'react';
-import type { DependencyGraph } from '../types';
-import { fetchGraph } from '../api';
+import { useState, useEffect } from "react";
+import type { DependencyGraph } from "../types";
+import { fetchGraph } from "../api";
 
 interface UseGraphReturn {
   /** The loaded dependency graph, or null while loading */
@@ -23,7 +23,7 @@ export function useGraph(): UseGraphReturn {
   useEffect(() => {
     fetchGraph()
       .then(setGraph)
-      .catch(() => setError('Failed to load dependency data'));
+      .catch(() => setError("Failed to load dependency data"));
   }, []);
 
   return { graph, error };

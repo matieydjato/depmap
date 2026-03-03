@@ -1,33 +1,34 @@
-import { useState, useCallback } from 'react';
-import Header from './components/Header';
-import GraphCanvas from './components/GraphCanvas';
-import Inspector from './components/Inspector';
-import SearchBar from './components/SearchBar';
-import Legend from './components/Legend';
-import Toast from './components/Toast';
-import { useGraph } from './hooks/useGraph';
-import { useSelection } from './hooks/useSelection';
-import { useExport } from './hooks/useExport';
-import { useToast } from './hooks/useToast';
-import type { Core } from 'cytoscape';
+import { useState, useCallback } from "react";
+import Header from "./components/Header";
+import GraphCanvas from "./components/GraphCanvas";
+import Inspector from "./components/Inspector";
+import SearchBar from "./components/SearchBar";
+import Legend from "./components/Legend";
+import Toast from "./components/Toast";
+import { useGraph } from "./hooks/useGraph";
+import { useSelection } from "./hooks/useSelection";
+import { useExport } from "./hooks/useExport";
+import { useToast } from "./hooks/useToast";
+import type { Core } from "cytoscape";
 
-type SizeMode = 'connections' | 'fileSize';
+type SizeMode = "connections" | "fileSize";
 
 export default function App() {
   const { graph, error } = useGraph();
   const { toast, showToast } = useToast();
   const { selectedFile, deleteSim, handleNodeSelect, handleSimulateDelete, clearSelection } =
-    useSelection(graph, (msg) => showToast(msg, 'error'));
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sizeMode, setSizeMode] = useState<SizeMode>('connections');
-  const [packageFilter, setPackageFilter] = useState('');
+    useSelection(graph, (msg) => showToast(msg, "error"));
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sizeMode, setSizeMode] = useState<SizeMode>("connections");
+  const [packageFilter, setPackageFilter] = useState("");
   const [cyRef, setCyRef] = useState<Core | null>(null);
 
-  const { handleExportPNG, handleExportJSON, handleResetView } =
-    useExport(cyRef, (msg) => showToast(msg, 'success'));
+  const { handleExportPNG, handleExportJSON, handleResetView } = useExport(cyRef, (msg) =>
+    showToast(msg, "success")
+  );
 
   const handleToggleSizeMode = useCallback(() => {
-    setSizeMode(prev => prev === 'connections' ? 'fileSize' : 'connections');
+    setSizeMode((prev) => (prev === "connections" ? "fileSize" : "connections"));
   }, []);
 
   if (error) {
@@ -88,7 +89,7 @@ export default function App() {
               if (node.length) {
                 cyRef.animate(
                   { center: { eles: node }, zoom: 2 } as unknown as cytoscape.AnimationOptions,
-                  { duration: 300 } as unknown as cytoscape.AnimationOptions,
+                  { duration: 300 } as unknown as cytoscape.AnimationOptions
                 );
               }
             }

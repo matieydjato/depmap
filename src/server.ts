@@ -88,10 +88,7 @@ function simulateDelete(
  * @param port - Port number to listen on
  * @returns The HTTP server instance
  */
-export function startServer(
-  graph: DependencyGraph,
-  port: number
-): http.Server {
+export function startServer(graph: DependencyGraph, port: number): http.Server {
   const app = express();
 
   // Build O(1) file index once at startup

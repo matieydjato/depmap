@@ -26,7 +26,9 @@ export async function analyzeCommand(options: ScanOptions): Promise<void> {
   }
 
   logger.info("");
-  logger.info(`📊 ${graph.stats.totalFiles} files (${graph.stats.totalSizeFormatted}), ${graph.stats.totalEdges} edges, ${graph.stats.circularCount} circular deps`);
+  logger.info(
+    `📊 ${graph.stats.totalFiles} files (${graph.stats.totalSizeFormatted}), ${graph.stats.totalEdges} edges, ${graph.stats.circularCount} circular deps`
+  );
 
   if (graph.isMonorepo) {
     logger.info(`📦 Monorepo — ${graph.packages.length} packages`);

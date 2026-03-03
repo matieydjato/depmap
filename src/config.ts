@@ -24,11 +24,7 @@ export interface DepMapConfig {
 }
 
 /** Config file names to search for (in priority order) */
-const CONFIG_FILES = [
-  ".depmaprc",
-  ".depmaprc.json",
-  "depmap.config.json",
-];
+const CONFIG_FILES = [".depmaprc", ".depmaprc.json", "depmap.config.json"];
 
 /**
  * Load DepMap configuration from the project root.
@@ -68,10 +64,7 @@ export async function mergeWithConfig(
   return {
     path: cliOptions.path || config.path || ".",
     port: cliOptions.port || config.port || 3000,
-    exclude: [
-      ...(config.exclude || []),
-      ...(cliOptions.exclude || []),
-    ],
+    exclude: [...(config.exclude || []), ...(cliOptions.exclude || [])],
     output: cliOptions.output,
   };
 }

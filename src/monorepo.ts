@@ -198,14 +198,10 @@ export function resolveMonorepoImport(
   for (const [pkgName, pkgDir] of workspaceConfig.packageNameToPath) {
     if (importSpecifier === pkgName || importSpecifier.startsWith(pkgName + "/")) {
       // Get the sub-path after the package name
-      const subPath = importSpecifier === pkgName
-        ? ""
-        : importSpecifier.slice(pkgName.length + 1);
+      const subPath = importSpecifier === pkgName ? "" : importSpecifier.slice(pkgName.length + 1);
 
       // Try to resolve to a file
-      const basePath = subPath
-        ? `${pkgDir}/${subPath}`
-        : `${pkgDir}/src/index`;
+      const basePath = subPath ? `${pkgDir}/${subPath}` : `${pkgDir}/src/index`;
 
       // Try exact match, then with extensions, then index files
       const extensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ""];

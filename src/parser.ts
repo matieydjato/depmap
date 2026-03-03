@@ -13,7 +13,7 @@ import { WorkspaceConfig, resolveMonorepoImport } from "./monorepo";
 
 /** Represents a path alias mapping (e.g., "@/*" -> ["src/*"]) */
 interface PathAlias {
-  prefix: string;    // e.g., "@/"
+  prefix: string; // e.g., "@/"
   wildcard: boolean; // whether the pattern ends with *
   targets: string[]; // e.g., ["src/"]
 }
@@ -78,23 +78,10 @@ export interface ParsedFile {
 }
 
 /** Extensions to try when resolving imports */
-const RESOLVE_EXTENSIONS = [
-  ".ts",
-  ".tsx",
-  ".js",
-  ".jsx",
-  ".mjs",
-  ".cjs",
-  "",
-];
+const RESOLVE_EXTENSIONS = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ""];
 
 /** Index files to try when resolving directory imports */
-const INDEX_FILES = [
-  "index.ts",
-  "index.tsx",
-  "index.js",
-  "index.jsx",
-];
+const INDEX_FILES = ["index.ts", "index.tsx", "index.js", "index.jsx"];
 
 /**
  * Resolve an import specifier to an actual file path relative to the project root.
@@ -197,9 +184,7 @@ function extractImportSpecifiers(sourceFile: SourceFile): string[] {
   }
 
   // CommonJS require() calls: const x = require('./foo')
-  const callExpressions = sourceFile.getDescendantsOfKind(
-    SyntaxKind.CallExpression
-  );
+  const callExpressions = sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression);
   for (const call of callExpressions) {
     const expression = call.getExpression();
 

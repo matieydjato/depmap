@@ -19,7 +19,8 @@ export default function Legend({ isMonorepo }: LegendProps) {
       </div>
       {isMonorepo && (
         <div className="flex items-center gap-1.5">
-          <div className="w-5 h-0.5 border-t-2 border-dashed border-[var(--color-accent-cross-pkg)]" /> Cross-Package
+          <div className="w-5 h-0.5 border-t-2 border-dashed border-[var(--color-accent-cross-pkg)]" />{" "}
+          Cross-Package
         </div>
       )}
     </div>

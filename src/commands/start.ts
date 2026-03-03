@@ -9,9 +9,7 @@ import { startServer } from "../server";
 import { ScanOptions } from "../types";
 import { logger } from "../logger";
 
-export async function startCommand(
-  options: Omit<ScanOptions, "output">
-): Promise<void> {
+export async function startCommand(options: Omit<ScanOptions, "output">): Promise<void> {
   logger.info("");
   logger.info("🗺️  DepMap scanning...");
   logger.info("");

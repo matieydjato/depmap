@@ -9,14 +9,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import ignore, { Ignore } from "ignore";
 
-const SUPPORTED_EXTENSIONS = new Set([
-  ".js",
-  ".jsx",
-  ".ts",
-  ".tsx",
-  ".mjs",
-  ".cjs",
-]);
+const SUPPORTED_EXTENSIONS = new Set([".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"]);
 
 /** Default directories/patterns to always exclude */
 const DEFAULT_EXCLUDES = [
@@ -54,10 +47,7 @@ async function loadGitignore(rootDir: string): Promise<Ignore> {
  * @param userExcludes - Additional glob patterns to exclude
  * @returns Array of relative file paths
  */
-export async function scanFiles(
-  rootDir: string,
-  userExcludes: string[] = []
-): Promise<string[]> {
+export async function scanFiles(rootDir: string, userExcludes: string[] = []): Promise<string[]> {
   const absoluteRoot = path.resolve(rootDir);
   const ig = await loadGitignore(absoluteRoot);
 

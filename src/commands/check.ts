@@ -9,9 +9,7 @@ import { analyzeDependencies } from "../index";
 import { ScanOptions } from "../types";
 import { logger } from "../logger";
 
-export async function checkCommand(
-  options: Omit<ScanOptions, "output">
-): Promise<void> {
+export async function checkCommand(options: Omit<ScanOptions, "output">): Promise<void> {
   logger.info("");
   logger.info("🗺️  DepMap checking for circular dependencies...");
   logger.info("");

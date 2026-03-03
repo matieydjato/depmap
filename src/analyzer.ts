@@ -64,9 +64,7 @@ export async function analyzeFileSizes(
 ): Promise<Map<string, FileSize>> {
   const absoluteRoot = path.resolve(rootDir);
 
-  const sizes = await Promise.all(
-    filePaths.map((filePath) => getFileSize(absoluteRoot, filePath))
-  );
+  const sizes = await Promise.all(filePaths.map((filePath) => getFileSize(absoluteRoot, filePath)));
 
   const sizeMap = new Map<string, FileSize>();
   for (const size of sizes) {

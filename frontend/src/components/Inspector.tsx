@@ -1,5 +1,5 @@
-import type { DependencyGraph, FileNode, DeleteSimResult } from '../types';
-import { PACKAGE_COLORS } from '../constants';
+import type { DependencyGraph, FileNode, DeleteSimResult } from "../types";
+import { PACKAGE_COLORS } from "../constants";
 
 interface InspectorProps {
   file: FileNode | null;
@@ -11,19 +11,24 @@ interface InspectorProps {
 }
 
 function getPkgColor(graph: DependencyGraph, pkgName: string): string {
-  const idx = graph.packages.findIndex(p => p.name === pkgName);
-  return idx >= 0 ? PACKAGE_COLORS[idx % PACKAGE_COLORS.length] : '#58a6ff';
+  const idx = graph.packages.findIndex((p) => p.name === pkgName);
+  return idx >= 0 ? PACKAGE_COLORS[idx % PACKAGE_COLORS.length] : "#58a6ff";
 }
 
 export default function Inspector({
-  file, graph, deleteSim, onClose, onSimulateDelete, onNodeNavigate,
+  file,
+  graph,
+  deleteSim,
+  onClose,
+  onSimulateDelete,
+  onNodeNavigate,
 }: InspectorProps) {
   if (!file) return null;
 
   return (
     <div
       className="absolute top-3 right-4 w-[360px] max-h-[calc(100vh-84px)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg p-4 z-10 overflow-y-auto text-[13px]"
-      style={{ animation: 'slideInRight 0.15s ease-out' }}
+      style={{ animation: "slideInRight 0.15s ease-out" }}
     >
       <button
         className="absolute top-3 right-3 bg-transparent border-none text-[var(--color-text-secondary)] text-lg leading-none cursor-pointer hover:text-[var(--color-text-primary)]"
@@ -32,7 +37,9 @@ export default function Inspector({
         &times;
       </button>
 
-      <h2 className="text-[15px] text-[var(--color-text-primary)] mb-1 break-all pr-7">{file.name}</h2>
+      <h2 className="text-[15px] text-[var(--color-text-primary)] mb-1 break-all pr-7">
+        {file.name}
+      </h2>
       <div className="text-[var(--color-text-secondary)] text-xs mb-2 break-all">{file.path}</div>
 
       {/* Meta: size + package */}
@@ -81,33 +88,44 @@ export default function Inspector({
 
           <div className="flex justify-between py-1 text-xs border-b border-[var(--color-bg-tertiary)]">
             <span className="text-[var(--color-text-secondary)]">Directly affected</span>
-            <span className={`font-semibold ${deleteSim.directlyAffected.length > 0 ? 'text-[var(--color-accent-red)]' : 'text-[var(--color-text-primary)]'}`}>
+            <span
+              className={`font-semibold ${deleteSim.directlyAffected.length > 0 ? "text-[var(--color-accent-red)]" : "text-[var(--color-text-primary)]"}`}
+            >
               {deleteSim.directlyAffected.length} files
             </span>
           </div>
           <div className="flex justify-between py-1 text-xs border-b border-[var(--color-bg-tertiary)]">
             <span className="text-[var(--color-text-secondary)]">Transitively affected</span>
-            <span className="text-[var(--color-text-primary)] font-semibold">{deleteSim.transitivelyAffected.length} files</span>
+            <span className="text-[var(--color-text-primary)] font-semibold">
+              {deleteSim.transitivelyAffected.length} files
+            </span>
           </div>
           <div className="flex justify-between py-1 text-xs border-b border-[var(--color-bg-tertiary)]">
             <span className="text-[var(--color-text-secondary)]">Total impact</span>
-            <span className={`font-semibold ${deleteSim.totalAffected > 0 ? 'text-[var(--color-accent-red)]' : 'text-[var(--color-text-primary)]'}`}>
+            <span
+              className={`font-semibold ${deleteSim.totalAffected > 0 ? "text-[var(--color-accent-red)]" : "text-[var(--color-text-primary)]"}`}
+            >
               {deleteSim.totalAffected} files
             </span>
           </div>
           <div className="flex justify-between py-1 text-xs">
             <span className="text-[var(--color-text-secondary)]">Broken imports</span>
-            <span className={`font-semibold ${deleteSim.brokenImports.length > 0 ? 'text-[var(--color-accent-red)]' : 'text-[var(--color-text-primary)]'}`}>
+            <span
+              className={`font-semibold ${deleteSim.brokenImports.length > 0 ? "text-[var(--color-accent-red)]" : "text-[var(--color-text-primary)]"}`}
+            >
               {deleteSim.brokenImports.length}
             </span>
           </div>
 
-          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mt-2.5 mb-1.5">Affected Files</div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mt-2.5 mb-1.5">
+            Affected Files
+          </div>
           <ul className="list-none p-0 mt-2 max-h-[150px] overflow-y-auto">
-            {deleteSim.directlyAffected.length === 0 && deleteSim.transitivelyAffected.length === 0 && (
-              <li className="text-[var(--color-accent-green)]">No files would be affected</li>
-            )}
-            {deleteSim.directlyAffected.map(f => (
+            {deleteSim.directlyAffected.length === 0 &&
+              deleteSim.transitivelyAffected.length === 0 && (
+                <li className="text-[var(--color-accent-green)]">No files would be affected</li>
+              )}
+            {deleteSim.directlyAffected.map((f) => (
               <li
                 key={f}
                 className="py-0.5 px-1.5 text-[11px] text-[var(--color-accent-red)] rounded cursor-pointer hover:bg-[var(--color-bg-tertiary)]"
@@ -116,7 +134,7 @@ export default function Inspector({
                 🔴 {f}
               </li>
             ))}
-            {deleteSim.transitivelyAffected.map(f => (
+            {deleteSim.transitivelyAffected.map((f) => (
               <li
                 key={f}
                 className="py-0.5 px-1.5 text-[11px] text-[var(--color-accent-orange)] rounded cursor-pointer hover:bg-[var(--color-bg-tertiary)]"
@@ -137,17 +155,18 @@ export default function Inspector({
         {file.imports.length === 0 ? (
           <li className="text-[var(--color-text-muted)]">No imports</li>
         ) : (
-          file.imports.map(imp => {
+          file.imports.map((imp) => {
             const isCirc = file.circularWith.includes(imp);
             return (
               <li
                 key={imp}
                 className={`py-1 px-2 rounded text-xs cursor-pointer transition-colors duration-150 hover:bg-[var(--color-bg-tertiary)] ${
-                  isCirc ? 'text-[var(--color-accent-red)]' : 'text-[var(--color-text-secondary)]'
+                  isCirc ? "text-[var(--color-accent-red)]" : "text-[var(--color-text-secondary)]"
                 }`}
                 onClick={() => onNodeNavigate(imp)}
               >
-                {isCirc && '🔴 '}{imp}
+                {isCirc && "🔴 "}
+                {imp}
               </li>
             );
           })
@@ -162,17 +181,18 @@ export default function Inspector({
         {file.importedBy.length === 0 ? (
           <li className="text-[var(--color-text-muted)]">Not imported by any file</li>
         ) : (
-          file.importedBy.map(imp => {
+          file.importedBy.map((imp) => {
             const isCirc = file.circularWith.includes(imp);
             return (
               <li
                 key={imp}
                 className={`py-1 px-2 rounded text-xs cursor-pointer transition-colors duration-150 hover:bg-[var(--color-bg-tertiary)] ${
-                  isCirc ? 'text-[var(--color-accent-red)]' : 'text-[var(--color-text-secondary)]'
+                  isCirc ? "text-[var(--color-accent-red)]" : "text-[var(--color-text-secondary)]"
                 }`}
                 onClick={() => onNodeNavigate(imp)}
               >
-                {isCirc && '🔴 '}{imp}
+                {isCirc && "🔴 "}
+                {imp}
               </li>
             );
           })

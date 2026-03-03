@@ -26,11 +26,7 @@ program
   .description("Scan project and open interactive visualization in browser")
   .argument("[path]", "Directory to scan", ".")
   .option("-p, --port <number>", "Port for the web server", "3000")
-  .option(
-    "-e, --exclude <patterns...>",
-    "Glob patterns to exclude",
-    []
-  )
+  .option("-e, --exclude <patterns...>", "Glob patterns to exclude", [])
   .action(async (path: string, options: { port: string; exclude: string[] }) => {
     await startCommand({
       path,
@@ -43,15 +39,8 @@ program
   .command("analyze")
   .description("Scan project and output dependency data as JSON")
   .argument("[path]", "Directory to scan", ".")
-  .option(
-    "-o, --output <file>",
-    "Output file path (defaults to stdout)"
-  )
-  .option(
-    "-e, --exclude <patterns...>",
-    "Glob patterns to exclude",
-    []
-  )
+  .option("-o, --output <file>", "Output file path (defaults to stdout)")
+  .option("-e, --exclude <patterns...>", "Glob patterns to exclude", [])
   .action(async (path: string, options: { output?: string; exclude: string[] }) => {
     await analyzeCommand({
       path,
@@ -66,11 +55,7 @@ program
   .description("Check for circular dependencies (exit code 1 if found)")
   .argument("[path]", "Directory to scan", ".")
   .option("--circular", "Check for circular dependencies", true)
-  .option(
-    "-e, --exclude <patterns...>",
-    "Glob patterns to exclude",
-    []
-  )
+  .option("-e, --exclude <patterns...>", "Glob patterns to exclude", [])
   .action(async (path: string, options: { exclude: string[] }) => {
     await checkCommand({
       path,
