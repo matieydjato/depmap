@@ -113,8 +113,8 @@ export function startServer(
     res.sendFile(path.join(publicDir, "index.html"));
   });
 
-  const server = app.listen(port, () => {
-    // Server started — message handled by the CLI command
+  const server = app.listen(port, "127.0.0.1", () => {
+    // Server started — bound to localhost only for security
   });
 
   return server;
