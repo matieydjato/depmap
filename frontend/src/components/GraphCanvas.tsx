@@ -2,7 +2,6 @@ import { useRef, useEffect, useCallback } from 'react';
 import cytoscape from 'cytoscape';
 import type { Core } from 'cytoscape';
 import type { DependencyGraph, DeleteSimResult } from '../types';
-import styles from './GraphCanvas.module.css';
 
 const PACKAGE_COLORS = [
   '#58a6ff', '#3fb950', '#d2a8ff', '#f0883e', '#f778ba',
@@ -373,5 +372,5 @@ export default function GraphCanvas({
     }
   }, [sizeMode, graph.files]);
 
-  return <div ref={containerRef} className={styles.canvas} />;
+  return <div ref={containerRef} className="w-full h-full" />;
 }

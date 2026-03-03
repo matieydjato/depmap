@@ -84,10 +84,7 @@ export default function App() {
 
   if (error) {
     return (
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        height: '100vh', color: 'var(--accent-red)', fontSize: 18,
-      }}>
+      <div className="flex items-center justify-center h-screen text-[var(--color-accent-red)] text-lg">
         {error}
       </div>
     );
@@ -95,10 +92,7 @@ export default function App() {
 
   if (!graph) {
     return (
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        height: '100vh', color: 'var(--text-secondary)', fontSize: 16,
-      }}>
+      <div className="flex items-center justify-center h-screen text-[var(--color-text-secondary)] text-base">
         Loading dependency graph...
       </div>
     );
@@ -119,7 +113,7 @@ export default function App() {
         onResetView={handleResetView}
       />
 
-      <div style={{ position: 'relative', flex: 1 }}>
+      <div className="relative flex-1">
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
         <GraphCanvas

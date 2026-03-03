@@ -1,27 +1,25 @@
-import styles from './Legend.module.css';
-
 interface LegendProps {
   isMonorepo: boolean;
 }
 
 export default function Legend({ isMonorepo }: LegendProps) {
   return (
-    <div className={styles.legend}>
-      <div className={styles.item}>
-        <div className={`${styles.dot} ${styles.normal}`} /> File
+    <div className="absolute bottom-4 left-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-[6px] py-2.5 px-3.5 z-10 text-xs flex gap-4">
+      <div className="flex items-center gap-1.5">
+        <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-accent-blue)]" /> File
       </div>
-      <div className={styles.item}>
-        <div className={`${styles.dot} ${styles.circular}`} /> Circular Dep
+      <div className="flex items-center gap-1.5">
+        <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-accent-red)]" /> Circular Dep
       </div>
-      <div className={styles.item}>
-        <div className={`${styles.dot} ${styles.selected}`} /> Selected
+      <div className="flex items-center gap-1.5">
+        <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-accent-purple)]" /> Selected
       </div>
-      <div className={styles.item}>
-        <div className={`${styles.dot} ${styles.affected}`} /> Affected
+      <div className="flex items-center gap-1.5">
+        <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-accent-orange)]" /> Affected
       </div>
       {isMonorepo && (
-        <div className={styles.item}>
-          <div className={styles.crossPkgLine} /> Cross-Package
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-0.5 border-t-2 border-dashed border-[var(--color-accent-cross-pkg)]" /> Cross-Package
         </div>
       )}
     </div>

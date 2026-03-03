@@ -1,31 +1,25 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@import "tailwindcss";
 
-:root {
-  --bg-primary: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-tertiary: #21262d;
-  --border: #30363d;
-  --text-primary: #f0f6fc;
-  --text-secondary: #8b949e;
-  --text-muted: #484f58;
-  --accent-blue: #58a6ff;
-  --accent-red: #f85149;
-  --accent-green: #3fb950;
-  --accent-orange: #d29922;
-  --accent-purple: #d2a8ff;
-  --accent-cross-pkg: #f0883e;
-  --radius: 6px;
-  --radius-lg: 8px;
+@theme {
+  --color-bg-primary: #0d1117;
+  --color-bg-secondary: #161b22;
+  --color-bg-tertiary: #21262d;
+  --color-border: #30363d;
+  --color-text-primary: #f0f6fc;
+  --color-text-secondary: #8b949e;
+  --color-text-muted: #484f58;
+  --color-accent-blue: #58a6ff;
+  --color-accent-red: #f85149;
+  --color-accent-green: #3fb950;
+  --color-accent-orange: #d29922;
+  --color-accent-purple: #d2a8ff;
+  --color-accent-cross-pkg: #f0883e;
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-secondary);
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
   overflow: hidden;
   height: 100vh;
 }
@@ -36,11 +30,17 @@ body {
   flex-direction: column;
 }
 
-button {
-  cursor: pointer;
-  font-family: inherit;
+button { cursor: pointer; font-family: inherit; }
+input, select { font-family: inherit; }
+
+/* Inspector slide-in animation */
+@keyframes slideInRight {
+  from { transform: translateX(10px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
 }
 
-input, select {
-  font-family: inherit;
+/* Toast slide-up animation */
+@keyframes slideInUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
