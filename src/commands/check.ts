@@ -7,46 +7,47 @@
 
 import { analyzeDependencies } from "../index";
 import { ScanOptions } from "../types";
+import { logger } from "../logger";
 
 export async function checkCommand(
   options: Omit<ScanOptions, "output">
 ): Promise<void> {
-  console.log("");
-  console.log("  🗺️  DepMap checking for circular dependencies...");
-  console.log("");
+  logger.info("");
+  logger.info("🗺️  DepMap checking for circular dependencies...");
+  logger.info("");
 
   const graph = analyzeDependencies({ ...options, exclude: options.exclude });
 
-  console.log(`  📁 Scanned ${graph.stats.totalFiles} files (${graph.stats.totalSizeFormatted})`);
-  console.log(`  🔗 Found ${graph.stats.totalEdges} import relationships`);
+  logger.info(`📁 Scanned ${graph.stats.totalFiles} files (${graph.stats.totalSizeFormatted})`);
+  logger.info(`🔗 Found ${graph.stats.totalEdges} import relationships`);
 
   if (graph.isMonorepo) {
-    console.log(`  📦 Monorepo — ${graph.packages.length} packages`);
+    logger.info(`📦 Monorepo — ${graph.packages.length} packages`);
   }
 
-  console.log("");
+  logger.info("");
 
   if (graph.circularDependencies.length === 0) {
-    console.log("  ✅ No circular dependencies found!");
-    console.log("");
+    logger.success("No circular dependencies found!");
+    logger.info("");
     process.exit(0);
   }
 
-  console.log(
-    `  ❌ Found ${graph.circularDependencies.length} circular dependenc${
+  logger.error(
+    `Found ${graph.circularDependencies.length} circular dependenc${
       graph.circularDependencies.length === 1 ? "y" : "ies"
     }:`
   );
-  console.log("");
+  logger.info("");
 
   for (let i = 0; i < graph.circularDependencies.length; i++) {
     const cycle = graph.circularDependencies[i];
-    console.log(`  Cycle ${i + 1}:`);
+    logger.info(`Cycle ${i + 1}:`);
     for (const file of cycle) {
-      console.log(`    → ${file}`);
+      logger.info(`    → ${file}`);
     }
-    console.log(`    → ${cycle[0]} (back to start)`);
-    console.log("");
+    logger.info(`    → ${cycle[0]} (back to start)`);
+    logger.info("");
   }
 
   process.exit(1);

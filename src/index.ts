@@ -44,6 +44,8 @@ export { startServer } from "./server";
 export { loadConfig, mergeWithConfig } from "./config";
 export { detectMonorepo } from "./monorepo";
 export { analyzeFileSizes, formatBytes } from "./analyzer";
+export { logger, Logger } from "./logger";
+export type { LogLevel } from "./logger";
 export type { FileNode, DependencyEdge, DependencyGraph, ScanOptions, MonorepoPackage } from "./types";
 export type { DepMapConfig } from "./config";
 export type { WorkspaceConfig } from "./monorepo";

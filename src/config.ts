@@ -8,6 +8,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { ScanOptions } from "./types";
+import { logger } from "./logger";
 
 /** Configuration that can be set in .depmaprc */
 export interface DepMapConfig {
@@ -48,7 +49,7 @@ export function loadConfig(rootDir: string): DepMapConfig {
         const config = JSON.parse(raw);
         return config as DepMapConfig;
       } catch (err) {
-        console.warn(`  ⚠ Failed to parse ${configFile}: ${(err as Error).message}`);
+        logger.warn(`Failed to parse ${configFile}: ${(err as Error).message}`);
         return {};
       }
     }

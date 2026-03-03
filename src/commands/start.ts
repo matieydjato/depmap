@@ -7,46 +7,47 @@
 import { analyzeDependencies } from "../index";
 import { startServer } from "../server";
 import { ScanOptions } from "../types";
+import { logger } from "../logger";
 
 export async function startCommand(
   options: Omit<ScanOptions, "output">
 ): Promise<void> {
-  console.log("");
-  console.log("  🗺️  DepMap scanning...");
-  console.log("");
+  logger.info("");
+  logger.info("🗺️  DepMap scanning...");
+  logger.info("");
 
   const startTime = Date.now();
   const graph = analyzeDependencies({ ...options, exclude: options.exclude });
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
 
-  console.log(`  ✓ Found ${graph.stats.totalFiles} files (${graph.stats.totalSizeFormatted})`);
-  console.log(`  ✓ Parsed ${graph.stats.totalEdges} imports`);
+  logger.success(`Found ${graph.stats.totalFiles} files (${graph.stats.totalSizeFormatted})`);
+  logger.success(`Parsed ${graph.stats.totalEdges} imports`);
 
   if (graph.isMonorepo) {
-    console.log(`  ✓ Monorepo detected — ${graph.packages.length} packages`);
+    logger.success(`Monorepo detected — ${graph.packages.length} packages`);
     for (const pkg of graph.packages) {
-      console.log(`    • ${pkg.name} (${pkg.fileCount} files, ${pkg.totalSizeFormatted})`);
+      logger.info(`    • ${pkg.name} (${pkg.fileCount} files, ${pkg.totalSizeFormatted})`);
     }
   }
 
   if (graph.stats.circularCount > 0) {
-    console.log(
-      `  ⚠ ${graph.stats.circularCount} circular dependenc${graph.stats.circularCount === 1 ? "y" : "ies"} detected`
+    logger.warn(
+      `${graph.stats.circularCount} circular dependenc${graph.stats.circularCount === 1 ? "y" : "ies"} detected`
     );
   } else {
-    console.log("  ✓ No circular dependencies found");
+    logger.success("No circular dependencies found");
   }
 
-  console.log(`  ⏱ Completed in ${elapsed}s`);
-  console.log("");
+  logger.info(`⏱ Completed in ${elapsed}s`);
+  logger.info("");
 
   // Start server
   startServer(graph, options.port);
 
   const url = `http://localhost:${options.port}`;
-  console.log(`  🌐 Open ${url}`);
-  console.log("  Press Ctrl+C to stop");
-  console.log("");
+  logger.info(`🌐 Open ${url}`);
+  logger.info("Press Ctrl+C to stop");
+  logger.info("");
 
   // Try to open browser
   try {
